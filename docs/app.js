@@ -282,7 +282,7 @@ exports.LiquidGlass = React.forwardRef(function LiquidGlass({
       key: map.url, href: map.url, x: "0", y: "0", width: map.width, height: map.height,
       preserveAspectRatio: "none", result: "displacement"
     }), h("feDisplacementMap", {
-      in: "SourceGraphic", in2: "displacement", scale: "128",
+      in: "SourceGraphic", in2: "displacement", scale: map.scale,
       xChannelSelector: "R", yChannelSelector: "G"
     })))) : null;
   return h("div", {
@@ -355,12 +355,25 @@ function getLensOffset(
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createDisplacementMap = createDisplacementMap;
+exports.getMapDimensions = getMapDimensions;
+exports.getDisplacementScale = getDisplacementScale;
 const { clamp, getLensOffset } = require("./optics");
+function getMapDimensions(width, height, devicePixelRatio = 1) {
+  const dpr = Number.isFinite(devicePixelRatio) ? Math.max(1, devicePixelRatio) : 1;
+  const resolution = Math.min(1.5, dpr, Math.sqrt(750000 / (width * height)));
+  return {
+    width: Math.max(1, Math.floor(width * resolution)),
+    height: Math.max(1, Math.floor(height * resolution))
+  };
+}
+function getDisplacementScale(refraction) {
+  return Math.max(2, Math.ceil(clamp(refraction, 0, 60) * 0.82 * 2.1));
+}
 function createDisplacementMap(width, height, radius, refraction, thickness) {
   if (width <= 0 || height <= 0 || refraction <= 0) return null;
-  const resolution = Math.min(1, Math.sqrt(750000 / (width * height)));
-  const mapWidth = Math.max(1, Math.ceil(width * resolution));
-  const mapHeight = Math.max(1, Math.ceil(height * resolution));
+  const { width: mapWidth, height: mapHeight } = getMapDimensions(
+    width, height, typeof window === "undefined" ? 1 : window.devicePixelRatio
+  );
   const canvas = document.createElement("canvas");
   canvas.width = mapWidth;
   canvas.height = mapHeight;
@@ -370,6 +383,7 @@ function createDisplacementMap(width, height, radius, refraction, thickness) {
   const pixels = image.data;
   const offset = { x: 0, y: 0 };
   const strength = clamp(refraction, 0, 60);
+  const scale = getDisplacementScale(strength);
   const edgeThickness = clamp(thickness, 0.5, 6);
   for (let y = 0; y < mapHeight; y += 1) {
     const sourceY = (y + 0.5) * height / mapHeight;
@@ -377,14 +391,14 @@ function createDisplacementMap(width, height, radius, refraction, thickness) {
       const sourceX = (x + 0.5) * width / mapWidth;
       getLensOffset(sourceX, sourceY, width, height, radius, strength, edgeThickness, offset);
       const index = (y * mapWidth + x) * 4;
-      pixels[index] = clamp(Math.round(127.5 + offset.x * 255 / 128), 0, 255);
-      pixels[index + 1] = clamp(Math.round(127.5 + offset.y * 255 / 128), 0, 255);
+      pixels[index] = clamp(Math.round(127.5 + offset.x * 255 / scale), 0, 255);
+      pixels[index + 1] = clamp(Math.round(127.5 + offset.y * 255 / scale), 0, 255);
       pixels[index + 2] = 128;
       pixels[index + 3] = 255;
     }
   }
   context.putImageData(image, 0, 0);
-  return { url: canvas.toDataURL("image/png"), width, height };
+  return { url: canvas.toDataURL("image/png"), width, height, scale };
 }
   };
 

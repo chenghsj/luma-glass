@@ -164,7 +164,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
                   preserveAspectRatio="none" result="displacement"
                 />
                 <feDisplacementMap in="SourceGraphic" in2="displacement"
-                  scale="128" xChannelSelector="R" yChannelSelector="G" />
+                  scale={map.scale} xChannelSelector="R" yChannelSelector="G" />
               </filter>
             </defs>
           </svg>
