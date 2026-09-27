@@ -155,7 +155,6 @@ export function App() {
               <div className="glass-eyebrow"><span className="glass-star" aria-hidden="true"><OpticalStar /></span> OPTICAL MATERIAL</div>
               <div className="glass-title">Liquid<br /><span>Glass.</span></div>
               <div className="glass-description">Light, depth and refraction.</div>
-              <div className="glass-pill">LIVE REFRACTION <span aria-hidden="true">↗</span></div>
             </div>
             </LiquidGlass>
           </GlassScene>
