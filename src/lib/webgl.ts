@@ -34,12 +34,7 @@ void main() {
     + u_thickness * 0.8;
   vec2 influence = mix(vec2(0.07), vec2(1.0), exp(-distanceToEdge / falloff));
   vec2 direction = v_uv * 2.0 - 1.0;
-  // The background border must meet its un-refracted position at the glass
-  // outline. Taper displacement only, never cross-fade background copies.
-  float edgeDistance = min(distanceToEdge.x, distanceToEdge.y);
-  float anchorWidth = max(24.0, u_strength * 1.75);
-  float edgeAnchor = smoothstep(0.0, anchorWidth, edgeDistance);
-  vec2 offset = direction * influence * (u_strength * 0.92) * edgeAnchor;
+  vec2 offset = direction * influence * (u_strength * 0.92);
   vec2 point = clamp(
     u_origin + v_uv * u_glassSize + offset,
     vec2(0.0), u_sceneSize
