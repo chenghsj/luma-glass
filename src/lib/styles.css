@@ -1,3 +1,4 @@
+@layer components {
 .luma-scene {
   position: relative;
   isolation: isolate;
@@ -8,6 +9,7 @@
   /* Base values can be overridden by a class without fighting inline styles. */
   --luma-opacity: var(--luma-opacity-base, .1);
   --luma-border-opacity: var(--luma-border-opacity-base, .15);
+  --luma-refraction: var(--luma-refraction-base, 23);
   --luma-thickness: var(--luma-thickness-base, 0.5px);
   --luma-radius: var(--luma-radius-base, 28px);
   --luma-top: calc(var(--luma-thickness) * .68);
@@ -125,4 +127,5 @@
   z-index: 3;
   width: 100%;
   height: 100%;
+}
 }

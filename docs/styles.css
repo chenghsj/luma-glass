@@ -80,11 +80,11 @@ button,input{font:inherit}
 }
 
 .render-picker{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:#59667d;font-weight:750}
-.variant-picker select{min-width:115px}
 .render-picker select{max-width:205px;padding:9px 27px 9px 11px;border:1px solid #dfe4f0;background:#f6f7fb;border-radius:10px;color:#45516c;font:inherit;cursor:pointer}
 @media(max-width:780px){.controls-bottom{flex-wrap:wrap}.control-actions{flex-wrap:wrap;justify-content:flex-end;width:100%}.render-picker{margin-right:auto}}
-@media(max-width:420px){.render-picker{width:100%;justify-content:space-between}.render-picker select{max-width:70%}.variant-picker select{min-width:0}}
+@media(max-width:420px){.render-picker{width:100%;justify-content:space-between}.render-picker select{max-width:70%}}
 
+@layer components {
 .luma-scene {
   position: relative;
   isolation: isolate;
@@ -95,6 +95,7 @@ button,input{font:inherit}
   /* Base values can be overridden by a class without fighting inline styles. */
   --luma-opacity: var(--luma-opacity-base, .1);
   --luma-border-opacity: var(--luma-border-opacity-base, .15);
+  --luma-refraction: var(--luma-refraction-base, 23);
   --luma-thickness: var(--luma-thickness-base, 0.5px);
   --luma-radius: var(--luma-radius-base, 28px);
   --luma-top: calc(var(--luma-thickness) * .68);
@@ -212,6 +213,7 @@ button,input{font:inherit}
   z-index: 3;
   width: 100%;
   height: 100%;
+}
 }
 
 #boot-status{margin:7rem auto;max-width:630px;text-align:center;font:600 14px -apple-system,BlinkMacSystemFont,sans-serif;color:#65728c;padding:20px}

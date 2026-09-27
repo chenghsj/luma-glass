@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { GlassProvider, GlassScene, LiquidGlass, glassVariantPresets } from "../index";
-import type { ActiveRenderer, GlassVariant, RefractionMode } from "../index";
+import { GlassProvider, GlassScene, LiquidGlass } from "../index";
+import type { ActiveRenderer, RefractionMode } from "../index";
 
 function OpticalStar() {
   return (
@@ -19,7 +19,6 @@ function OpticalStar() {
 }
 
 export function App() {
-  const [variant, setVariant] = useState<GlassVariant>("default");
   const [opacity, setOpacity] = useState(0.1);
   const [borderOpacity, setBorderOpacity] = useState(0.15);
   const [tone, setTone] = useState<"light" | "dark">("dark");
@@ -133,7 +132,6 @@ export function App() {
         </div>
 
         <GlassProvider defaults={{
-          variant,
           opacity,
           borderOpacity,
           tone,
@@ -216,26 +214,6 @@ export function App() {
           <div className="controls-bottom">
             <span className="status"><i /> {showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"}</span>
             <div className="control-actions">
-              <label className="render-picker variant-picker" htmlFor="glass-variant">
-                Variant
-                <select
-                  id="glass-variant"
-                  value={variant}
-                  onChange={(event) => {
-                    const next = event.target.value as GlassVariant;
-                    const preset = glassVariantPresets[next];
-                    setVariant(next);
-                    setOpacity(preset.opacity);
-                    setBorderOpacity(preset.borderOpacity);
-                    setRefraction(preset.refraction);
-                    setShowOriginal(false);
-                  }}
-                >
-                  <option value="default">Default</option>
-                  <option value="subtle">Subtle</option>
-                  <option value="pronounced">Pronounced</option>
-                </select>
-              </label>
               <label className="render-picker tone-picker" htmlFor="glass-tone">
                 Glass tone
                 <select id="glass-tone" value={tone} onChange={(event) => setTone(event.target.value as "light" | "dark")}>
@@ -255,7 +233,6 @@ export function App() {
                 {showOriginal ? "Show refraction" : "Show original"}
               </button>
               <button type="button" onClick={() => {
-                setVariant("default");
                 setOpacity(0.1);
                 setBorderOpacity(0.15);
                 setTone("dark");

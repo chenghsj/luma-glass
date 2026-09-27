@@ -39,7 +39,7 @@ npm install
 npm run dev
 ```
 
-Open the local Vite URL printed in your terminal. The playground includes a variant selector, live sliders for surface opacity, border opacity, refraction, and edge thickness, plus a dark/light glass preview. To check the package:
+Open the local Vite URL printed in your terminal. The playground includes live sliders for surface opacity, border opacity, refraction, and edge thickness, plus a dark/light glass preview. To check the package:
 
 ```bash
 npm run typecheck
@@ -47,31 +47,49 @@ npm test
 npm run build
 ```
 
-## Variants and className
+## Tailwind and consumer-defined variants
 
-Use `variant` for optical presets and `className` for layout or custom CSS.
-`default` preserves the existing 10% surface opacity, 15% border opacity and
-23px refraction. `subtle` uses 6% / 8% / 12px; `pronounced` uses
-16% / 25% / 38px. All three leave `thickness`, `radius`, `tone` and
-`renderMode` unchanged.
+Luma Glass does **not** define built-in variants or require Tailwind or CVA.
+The React component accepts `className` and all existing appearance props.
+Consumers can define their own named variants using CSS, Tailwind classes, a
+local wrapper component, or a utility such as `class-variance-authority`.
+There is no `variant` prop on `LiquidGlass` or `GlassProvider`.
+
+For example, in an app using Tailwind and CVA (install CVA in that app):
 
 ```tsx
-<GlassProvider defaults={{ variant: "subtle", tone: "dark" }}>
-  <GlassScene image="/background.jpg">
-    <LiquidGlass className="my-glass">Inherited subtle variant</LiquidGlass>
-    <LiquidGlass variant="pronounced" opacity={0.1} borderOpacity={0.15}>
-      Pronounced refraction with individually overridden opacity
-    </LiquidGlass>
-  </GlassScene>
-</GlassProvider>
+import { cva, type VariantProps } from "class-variance-authority";
+import { LiquidGlass, type LiquidGlassProps } from "@chenghsj/luma-glass";
+import "@chenghsj/luma-glass/style.css";
+
+const glassCardVariants = cva("w-80 p-6", {
+  variants: {
+    variant: {
+      subtle: "[--luma-opacity:0.06] [--luma-border-opacity:0.08] [--luma-refraction:12]",
+      hero: "[--luma-opacity:0.16] [--luma-border-opacity:0.25] [--luma-refraction:38]",
+    },
+  },
+  defaultVariants: { variant: "subtle" },
+});
+
+type GlassCardProps = LiquidGlassProps & VariantProps<typeof glassCardVariants>;
+
+function GlassCard({ variant, className, ...props }: GlassCardProps) {
+  return (
+    <LiquidGlass
+      {...props}
+      className={[glassCardVariants({ variant }), className].filter(Boolean).join(" ")}
+    />
+  );
+}
+
+// Your app owns the variant names, class names and values:
+<GlassCard variant="hero" opacity={0.1} className="mx-auto">
+  Custom glass
+</GlassCard>
 ```
 
-Component props win over an explicit component variant, which wins over
-inherited provider values. A provider's individually specified settings win
-over its variant. Nested providers inherit all unspecified settings.
-
-CSS classes can override the active variables for values not specified as
-component props; use a selector such as `.luma-glass.my-glass`:
+CVA is optional. The same optical values can be set with ordinary CSS:
 
 ```css
 .luma-glass.my-glass {
@@ -79,17 +97,26 @@ component props; use a selector such as `.luma-glass.my-glass`:
   padding: 24px;
   --luma-opacity: 0.12;
   --luma-border-opacity: 0.2;
+  --luma-refraction: 16;
   --luma-radius: 36px;
   --luma-thickness: 1px;
 }
 ```
 
-The CSS radius and thickness are also used by the refraction renderer, keeping
-the lens aligned with the silhouette. An explicit `opacity`,
-`borderOpacity`, `radius` or `thickness` prop wins over a CSS class.
-For refraction strength, use the `refraction` prop or a variant rather than a
-CSS variable. An explicitly supplied `style` value has React's usual
-last-write precedence.
+The stylesheet uses the `components` cascade layer so Tailwind v4 utilities
+can override library styling. Import Tailwind in your app as normal. The
+optical CSS variables are `--luma-opacity` (0–1),
+`--luma-border-opacity` (0–1), `--luma-refraction` (0–60),
+`--luma-radius` (CSS pixels), and `--luma-thickness` (CSS pixels).
+Use `--luma-radius` rather than just a Tailwind `rounded-*` utility
+when changing the optical silhouette: Canvas and WebGL use the variable
+to match the refraction to the same radius.
+
+Provider defaults supply baseline values, while individual component props
+override the corresponding class-based CSS variables. Explicit `style`
+values have the usual React inline-style precedence. `className` remains
+available for normal layout, positioning, and responsive Tailwind utilities.
+The library does not install, import, or bundle Tailwind or CVA.
 
 ## Global defaults with GlassProvider
 
@@ -106,7 +133,6 @@ export function Example() {
   return (
     <GlassProvider
       defaults={{
-        variant: "default",
         opacity: 0.1,
         borderOpacity: 0.15,
         tone: "light",
@@ -170,8 +196,7 @@ export function Hero() {
 
 | Prop | Type | Default | Range |
 | --- | --- | --- | --- |
-| `variant` | `"default" \| "subtle" \| "pronounced"` | `"default"` | Optical preset; does not change shape or renderer |
-| `className` | string | — | Custom CSS, layout and class-overridable variables |
+| `className` | string | — | Consumer-defined variants, layout and class-overridable optical variables |
 | `opacity` | number | `0.1` | 0–1, glass surface |
 | `borderOpacity` | number | `0.15` | 0–1, optical rim and highlights (independent of surface) |
 | `tone` | `"light" \| "dark"` | `"light"` | Controls surface tint; does not change the glass silhouette |
