@@ -24,8 +24,12 @@ export interface LiquidGlassProps extends HTMLAttributes<HTMLDivElement> {
   renderMode?: RefractionMode;
   /** Reports the actual renderer, including any fallback. */
   onRendererChange?: (renderer: ActiveRenderer) => void;
-  /** White glass opacity, from 0 to 1. Default: 0.4. */
+  /** Glass surface opacity, from 0 to 1. Default: 0.4. */
   opacity?: number;
+  /** Independent opacity for the optical rim and highlights, 0 to 1. Default: 0.42. */
+  borderOpacity?: number;
+  /** Glass tint; dark matches a low-light system-glass look. Default: light. */
+  tone?: "light" | "dark";
   /** Optical displacement in CSS pixels, from 0 to 60. Default: 23. */
   refraction?: number;
   /** Optical shell thickness in CSS pixels, from 0.5 to 6. Default: 0.5. */
@@ -38,6 +42,8 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
   function LiquidGlass(
     {
       opacity: opacityProp,
+      borderOpacity: borderOpacityProp,
+      tone: toneProp,
       refraction: refractionProp,
       thickness: thicknessProp,
       radius: radiusProp,
@@ -54,6 +60,8 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
     const defaults = useGlassDefaults();
     // Explicit component props always win over provider and built-in defaults.
     const opacity = opacityProp ?? defaults.opacity;
+    const borderOpacity = borderOpacityProp ?? defaults.borderOpacity;
+    const tone = toneProp ?? defaults.tone;
     const refraction = refractionProp ?? defaults.refraction;
     const thickness = thicknessProp ?? defaults.thickness;
     const radius = radiusProp ?? defaults.radius;
@@ -63,8 +71,8 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
     const cpuCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const rendererRef = useRef<RefractionRenderer | null>(null);
     const redrawRef = useRef<(() => void) | null>(null);
-    const opticalValues = useRef({ refraction, thickness });
-    opticalValues.current = { refraction, thickness };
+    const opticalValues = useRef({ refraction, thickness, radius });
+    opticalValues.current = { refraction, thickness, radius };
     const onChangeRef = useRef(onRendererChange);
     onChangeRef.current = onRendererChange;
 
@@ -127,6 +135,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
           glass: root.getBoundingClientRect(),
           strength: clamp(values.refraction, 0, 60),
           thickness: clamp(values.thickness, 0.5, 6),
+          radius: Math.max(0, values.radius),
         };
         try {
           currentRenderer.draw(frame);
@@ -183,10 +192,11 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
     useEffect(() => {
       // The renderer effect owns error handling and WebGL → Canvas fallback.
       redrawRef.current?.();
-    }, [refraction, thickness, scene?.imageElement, renderMode]);
+    }, [refraction, thickness, radius, scene?.imageElement, renderMode]);
 
     const variables = {
       "--luma-opacity": clamp(opacity, 0, 1),
+      "--luma-border-opacity": clamp(borderOpacity, 0, 1),
       "--luma-thickness": clamp(thickness, 0.5, 6) + "px",
       "--luma-radius": Math.max(0, radius) + "px",
     } as CSSProperties;
@@ -195,6 +205,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
       <div
         {...rest}
         ref={setRootRef}
+        data-tone={tone}
         className={["luma-glass", className].filter(Boolean).join(" ")}
         style={{ ...variables, ...style }}
       >

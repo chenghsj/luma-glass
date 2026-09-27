@@ -9,7 +9,7 @@ import type { LiquidGlassProps } from "./LiquidGlass";
 /** Appearance defaults inherited by all LiquidGlass components in this subtree. */
 export type GlassDefaults = Pick<
   LiquidGlassProps,
-  "opacity" | "refraction" | "thickness" | "radius" | "renderMode"
+  "opacity" | "borderOpacity" | "tone" | "refraction" | "thickness" | "radius" | "renderMode"
 >;
 
 export interface GlassProviderProps {
@@ -20,6 +20,8 @@ export interface GlassProviderProps {
 
 const builtInDefaults: Required<GlassDefaults> = {
   opacity: 0.4,
+  borderOpacity: 0.42,
+  tone: "light",
   refraction: 23,
   thickness: 0.5,
   radius: 28,
@@ -31,16 +33,18 @@ const GlassDefaultsContext = createContext<Required<GlassDefaults>>(builtInDefau
 /** Merge defaults by field, so nested providers preserve unspecified values. */
 export function GlassProvider({ defaults = {}, children }: GlassProviderProps) {
   const parent = useContext(GlassDefaultsContext);
-  const { opacity, refraction, thickness, radius, renderMode } = defaults;
+  const { opacity, borderOpacity, tone, refraction, thickness, radius, renderMode } = defaults;
   const value = useMemo<Required<GlassDefaults>>(
     () => ({
       opacity: opacity ?? parent.opacity,
+      borderOpacity: borderOpacity ?? parent.borderOpacity,
+      tone: tone ?? parent.tone,
       refraction: refraction ?? parent.refraction,
       thickness: thickness ?? parent.thickness,
       radius: radius ?? parent.radius,
       renderMode: renderMode ?? parent.renderMode,
     }),
-    [parent, opacity, refraction, thickness, radius, renderMode],
+    [parent, opacity, borderOpacity, tone, refraction, thickness, radius, renderMode],
   );
   return (
     <GlassDefaultsContext.Provider value={value}>

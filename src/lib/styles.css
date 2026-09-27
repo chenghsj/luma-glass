@@ -6,6 +6,7 @@
 
 .luma-glass {
   --luma-opacity: .4;
+  --luma-border-opacity: .42;
   --luma-thickness: 0.5px;
   --luma-radius: 28px;
   --luma-top: calc(var(--luma-thickness) * .68);
@@ -50,8 +51,16 @@
     rgba(246, 249, 255, var(--luma-opacity));
 }
 
+.luma-glass[data-tone="dark"] .luma-glass__surface {
+  /* Neutral charcoal tint; the sampled scene stays sharp under the surface. */
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .025) 48%, rgba(255, 255, 255, .06)),
+    rgba(24, 26, 31, var(--luma-opacity));
+}
+
 .luma-glass__shell {
   z-index: 2;
+  opacity: var(--luma-border-opacity);
   border-radius: inherit;
   padding: var(--luma-top) var(--luma-right) var(--luma-bottom) var(--luma-left);
   /* A narrow optical rim: bright at the top/left and lower-right, quiet on the sides. */
@@ -80,6 +89,7 @@
 
 .luma-glass__contact {
   z-index: 2;
+  opacity: var(--luma-border-opacity);
   inset: var(--luma-top) var(--luma-right) var(--luma-bottom) var(--luma-left);
   width: auto;
   height: auto;
@@ -96,6 +106,7 @@
 
 .luma-glass__highlight {
   z-index: 2;
+  opacity: var(--luma-border-opacity);
   inset: 0;
   border: 1px solid rgba(255, 255, 255, .3);
   border-top-color: rgba(255, 255, 255, .88);
