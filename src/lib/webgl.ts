@@ -115,26 +115,62 @@ export function createRefractionRenderer(
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  // HTMLImageElement backed by SVG can fail texImage2D in Chrome even when
-  // the image renders in CSS and Canvas 2D. Rasterize first, then upload pixels.
-  const bitmap = document.createElement("canvas");
-  bitmap.width = image.naturalWidth;
-  bitmap.height = image.naturalHeight;
-  if (!bitmap.width || !bitmap.height) {
+  if (!image.naturalWidth || !image.naturalHeight) {
     throw new Error("Background image has no intrinsic dimensions.");
   }
+
+  // SVG rasterization at 300x150 (a possible viewBox-only default) blurs
+  // the entire scene when its pixels are later magnified inside the glass.
+  // Render the SVG at its covered on-screen size and device pixel ratio.
+  const sourceUrl = (image.currentSrc || image.src).toLowerCase();
+  const isVector = sourceUrl.includes(".svg") ||
+    sourceUrl.startsWith("data:image/svg+xml");
+  const bitmap = document.createElement("canvas");
   const bitmapContext = bitmap.getContext("2d");
   if (!bitmapContext) throw new Error("Cannot rasterize background image.");
-  bitmapContext.drawImage(image, 0, 0, bitmap.width, bitmap.height);
+  const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
+  const maxByTexture = maxTextureSize /
+    Math.max(image.naturalWidth, image.naturalHeight);
+  const maxByPixels = Math.sqrt(
+    8_000_000 / (image.naturalWidth * image.naturalHeight),
+  );
+  let textureWidth = 0;
+  let textureHeight = 0;
 
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
-  const textureError = gl.getError();
-  if (textureError !== gl.NO_ERROR) {
-    throw new Error(
-      "Canvas-backed background texture upload failed (WebGL error 0x" +
-        textureError.toString(16) + ").",
-    );
+  function uploadTexture(displayWidth: number, displayHeight: number, pixelRatio: number) {
+    const requestedScale = isVector
+      ? Math.max(
+          1,
+          Math.ceil(
+            Math.max(
+              displayWidth / image.naturalWidth,
+              displayHeight / image.naturalHeight,
+            ) * pixelRatio * 2,
+          ) / 2,
+        )
+      : 1;
+    const scale = Math.min(requestedScale, 3, maxByTexture, maxByPixels);
+    const width = Math.max(1, Math.floor(image.naturalWidth * scale));
+    const height = Math.max(1, Math.floor(image.naturalHeight * scale));
+    if (width === textureWidth && height === textureHeight) return;
+
+    bitmap.width = width;
+    bitmap.height = height;
+    bitmapContext.clearRect(0, 0, width, height);
+    bitmapContext.drawImage(image, 0, 0, width, height);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
+    const textureError = gl.getError();
+    if (textureError !== gl.NO_ERROR) {
+      throw new Error(
+        "Canvas-backed background texture upload failed (WebGL error 0x" +
+          textureError.toString(16) + ").",
+      );
+    }
+    textureWidth = width;
+    textureHeight = height;
   }
 
   const position = gl.getAttribLocation(program, "a_position");
@@ -170,6 +206,7 @@ export function createRefractionRenderer(
         image.naturalWidth,
         image.naturalHeight,
       );
+      uploadTexture(cover.displayWidth, cover.displayHeight, pixelRatio);
 
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(program);
