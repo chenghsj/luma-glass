@@ -1,4 +1,4 @@
-/* This stylesheet is generated from the real React demo and library CSS. */
+/* Generated from the React demo and library. */
 :root{
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
   color:#303b55;background:#f1f2f7;font-synthesis:none;
@@ -26,6 +26,10 @@ button,input{font:inherit}
 .demo-glass.is-dragging{cursor:grabbing;z-index:2}
 .demo-glass .glass-inner{-webkit-user-select:none;user-select:none}
 .glass-inner{height:100%;padding:clamp(18px,3.7vw,41px);display:flex;flex-direction:column;align-items:flex-start;color:#33415f}
+.demo-glass[data-tone="dark"] .glass-inner{color:#f7f8ff}
+.demo-glass[data-tone="dark"] .glass-description{color:rgba(245,248,255,.86)}
+.demo-glass[data-tone="dark"] .glass-star{color:#eef3ff;background:#ffffff1e;border-color:#ffffff50}
+.demo-glass[data-tone="dark"] .glass-pill{color:#ecf0ff;background:#ffffff1c;border-color:#ffffff5b}
 .glass-eyebrow{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:1.7px;font-size:clamp(8px,1.1vw,11px)}
 .glass-star{display:grid;place-items:center;width:24px;height:24px;border:1px solid #ffffffc9;border-radius:50%;background:#ffffff85;color:#7080af;flex-shrink:0}
 .glass-star svg{display:block;width:17px;height:17px}
@@ -35,7 +39,7 @@ button,input{font:inherit}
 .glass-pill{margin-top:18px;border:1px solid #ffffffc7;background:#ffffffa0;color:#3e4c6b;display:flex;gap:20px;align-items:center;border-radius:30px;padding:9px 13px;font-size:10px;font-weight:800;letter-spacing:.7px}
 .glass-pill span{font-size:14px}
 .demo-drag-hint{margin:12px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#7a869c}
-.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:36px;row-gap:25px;padding:29px 35px 22px;margin-top:20px;border-radius:19px;background:#fff;border:1px solid #edf0f5;box-shadow:0 5px 20px #515b8010}
+.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:36px;row-gap:25px;padding:29px 35px 22px;margin-top:20px;border-radius:19px;background:#fff;border:1px solid #edf0f5;box-shadow:0 5px 20px #515b8010}
 .control-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:13px;font-size:12px;font-weight:750}
 .control-head output{color:#7884a0;font-size:11px;font-variant-numeric:tabular-nums}
 .control input{display:block;width:100%;margin:0;accent-color:#777eaf;cursor:pointer}
@@ -80,7 +84,6 @@ button,input{font:inherit}
 @media(max-width:780px){.controls-bottom{flex-wrap:wrap}.control-actions{flex-wrap:wrap;justify-content:flex-end;width:100%}.render-picker{margin-right:auto}}
 @media(max-width:420px){.render-picker{width:100%;justify-content:space-between}.render-picker select{max-width:70%}}
 
-
 .luma-scene {
   position: relative;
   isolation: isolate;
@@ -89,6 +92,7 @@ button,input{font:inherit}
 
 .luma-glass {
   --luma-opacity: .4;
+  --luma-border-opacity: .42;
   --luma-thickness: 0.5px;
   --luma-radius: 28px;
   --luma-top: calc(var(--luma-thickness) * .68);
@@ -133,8 +137,16 @@ button,input{font:inherit}
     rgba(246, 249, 255, var(--luma-opacity));
 }
 
+.luma-glass[data-tone="dark"] .luma-glass__surface {
+  /* Neutral charcoal tint; the sampled scene stays sharp under the surface. */
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .025) 48%, rgba(255, 255, 255, .06)),
+    rgba(24, 26, 31, var(--luma-opacity));
+}
+
 .luma-glass__shell {
   z-index: 2;
+  opacity: var(--luma-border-opacity);
   border-radius: inherit;
   padding: var(--luma-top) var(--luma-right) var(--luma-bottom) var(--luma-left);
   /* A narrow optical rim: bright at the top/left and lower-right, quiet on the sides. */
@@ -163,6 +175,7 @@ button,input{font:inherit}
 
 .luma-glass__contact {
   z-index: 2;
+  opacity: var(--luma-border-opacity);
   inset: var(--luma-top) var(--luma-right) var(--luma-bottom) var(--luma-left);
   width: auto;
   height: auto;
@@ -179,6 +192,7 @@ button,input{font:inherit}
 
 .luma-glass__highlight {
   z-index: 2;
+  opacity: var(--luma-border-opacity);
   inset: 0;
   border: 1px solid rgba(255, 255, 255, .3);
   border-top-color: rgba(255, 255, 255, .88);
