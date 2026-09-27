@@ -54,6 +54,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
     const webglCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const cpuCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const rendererRef = useRef<RefractionRenderer | null>(null);
+    const redrawRef = useRef<(() => void) | null>(null);
     const opticalValues = useRef({ refraction, thickness });
     opticalValues.current = { refraction, thickness };
     const onChangeRef = useRef(onRendererChange);
@@ -108,23 +109,39 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
       if (!renderer) return;
 
       rendererRef.current = renderer;
-      const currentRenderer = renderer;
+      let currentRenderer = renderer;
       let pending = 0;
       const draw = () => {
         pending = 0;
         const values = opticalValues.current;
+        const frame = {
+          scene: sceneRoot.getBoundingClientRect(),
+          glass: root.getBoundingClientRect(),
+          strength: clamp(values.refraction, 0, 60),
+          thickness: clamp(values.thickness, 0.5, 6),
+        };
         try {
-          currentRenderer.draw({
-            scene: sceneRoot.getBoundingClientRect(),
-            glass: root.getBoundingClientRect(),
-            strength: clamp(values.refraction, 0, 60),
-            thickness: clamp(values.thickness, 0.5, 6),
-          });
+          currentRenderer.draw(frame);
         } catch (error) {
+          if (import.meta.env.DEV) console.warn("[luma-glass] Renderer failed:", error);
+          if (active === "webgl") {
+            currentRenderer.dispose();
+            try {
+              currentRenderer = createCanvasRefractionRenderer(cpuCanvas, image);
+              currentRenderer.draw(frame);
+              rendererRef.current = currentRenderer;
+              active = "canvas";
+              onChangeRef.current?.("canvas");
+              return;
+            } catch (fallbackError) {
+              if (import.meta.env.DEV) {
+                console.warn("[luma-glass] Canvas fallback failed:", fallbackError);
+              }
+            }
+          }
           currentRenderer.dispose();
           rendererRef.current = null;
           onChangeRef.current?.("none");
-          if (import.meta.env.DEV) console.warn("[luma-glass] Refraction failed:", error);
         }
       };
       const schedule = () => {
@@ -132,6 +149,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
           pending = window.requestAnimationFrame(draw);
         }
       };
+      redrawRef.current = schedule;
       const observer = new ResizeObserver(schedule);
       observer.observe(sceneRoot);
       observer.observe(root);
@@ -146,20 +164,14 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
         window.removeEventListener("resize", schedule);
         currentRenderer.dispose();
         rendererRef.current = null;
+        redrawRef.current = null;
       };
     }, [scene?.imageElement, scene?.sceneRef, renderMode]);
 
     useEffect(() => {
-      const root = rootRef.current;
-      const sceneRoot = scene?.sceneRef.current;
-      if (!root || !sceneRoot || !rendererRef.current) return;
-      rendererRef.current.draw({
-        scene: sceneRoot.getBoundingClientRect(),
-        glass: root.getBoundingClientRect(),
-        strength: clamp(refraction, 0, 60),
-        thickness: clamp(thickness, 0.5, 6),
-      });
-    }, [refraction, thickness, scene?.sceneRef, scene?.imageElement, renderMode]);
+      // The renderer effect owns error handling and WebGL → Canvas fallback.
+      redrawRef.current?.();
+    }, [refraction, thickness, scene?.imageElement, renderMode]);
 
     const variables = {
       "--luma-opacity": clamp(opacity, 0, 1),

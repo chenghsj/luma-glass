@@ -83,6 +83,22 @@
             : "Canvas 2D active · WebGL not required");
       } catch (error) {
         console.warn("[luma-glass demo] Renderer failed:", error);
+        if (activeMode === "webgl") {
+          webglUnavailable = true;
+          webglRenderer = null;
+          chooseRenderer();
+          if (renderer) {
+            try {
+              renderer.draw();
+              const visible = !showOriginal && Number(refraction.value) > 0;
+              cpuCanvas.style.opacity = visible ? "1" : "0";
+              setStatus("Canvas 2D active · WebGL unavailable");
+              return;
+            } catch (fallbackError) {
+              console.warn("[luma-glass demo] Canvas fallback failed:", fallbackError);
+            }
+          }
+        }
         canvas.style.opacity = "0";
         cpuCanvas.style.opacity = "0";
         renderer = null;
