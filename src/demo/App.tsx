@@ -19,7 +19,9 @@ function OpticalStar() {
 }
 
 export function App() {
-  const [opacity, setOpacity] = useState(0.4);
+  const [opacity, setOpacity] = useState(0.6);
+  const [borderOpacity, setBorderOpacity] = useState(0.38);
+  const [tone, setTone] = useState<"light" | "dark">("dark");
   const [refraction, setRefraction] = useState(23);
   const [showOriginal, setShowOriginal] = useState(false);
   const [thickness, setThickness] = useState(0.5);
@@ -131,6 +133,8 @@ export function App() {
 
         <GlassProvider defaults={{
           opacity,
+          borderOpacity,
+          tone,
           refraction: showOriginal ? 0 : refraction,
           thickness,
           radius: 40,
@@ -161,7 +165,7 @@ export function App() {
         <section className="controls" aria-label="Glass appearance controls">
           <div className="control">
             <div className="control-head">
-              <label htmlFor="opacity">Glass opacity</label>
+              <label htmlFor="opacity">Surface opacity</label>
               <output htmlFor="opacity">{Math.round(opacity * 100)}%</output>
             </div>
             <input
@@ -196,9 +200,27 @@ export function App() {
             />
             <div className="control-scale"><span>Thin</span><span>Thick</span></div>
           </div>
+          <div className="control">
+            <div className="control-head">
+              <label htmlFor="border-opacity">Border opacity</label>
+              <output htmlFor="border-opacity">{Math.round(borderOpacity * 100)}%</output>
+            </div>
+            <input
+              id="border-opacity" type="range" min="0" max="1" step="0.01"
+              value={borderOpacity} onChange={(event) => setBorderOpacity(Number(event.target.value))}
+            />
+            <div className="control-scale"><span>Subtle</span><span>Bright</span></div>
+          </div>
           <div className="controls-bottom">
             <span className="status"><i /> {showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"}</span>
             <div className="control-actions">
+              <label className="render-picker tone-picker" htmlFor="glass-tone">
+                Glass tone
+                <select id="glass-tone" value={tone} onChange={(event) => setTone(event.target.value as "light" | "dark")}>
+                  <option value="dark">Dark</option>
+                  <option value="light">Light</option>
+                </select>
+              </label>
               <label className="render-picker" htmlFor="render-mode">
                 Renderer
                 <select id="render-mode" value={renderMode} onChange={(event) => setRenderMode(event.target.value as RefractionMode)}>
@@ -211,7 +233,9 @@ export function App() {
                 {showOriginal ? "Show refraction" : "Show original"}
               </button>
               <button type="button" onClick={() => {
-                setOpacity(0.4);
+                setOpacity(0.6);
+                setBorderOpacity(0.38);
+                setTone("dark");
                 setRefraction(23);
                 setThickness(0.5);
                 setShowOriginal(false);

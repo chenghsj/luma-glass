@@ -39,7 +39,7 @@ npm install
 npm run dev
 ```
 
-Open the local Vite URL printed in your terminal. The playground includes live sliders for opacity, refraction and edge thickness. To check the package:
+Open the local Vite URL printed in your terminal. The playground includes live sliders for surface opacity, border opacity, refraction, and edge thickness, plus a dark/light glass preview. To check the package:
 
 ```bash
 npm run typecheck
@@ -63,6 +63,8 @@ export function Example() {
     <GlassProvider
       defaults={{
         opacity: 0.4,
+        borderOpacity: 0.42,
+        tone: "light",
         refraction: 23,
         thickness: 0.5,
         radius: 28,
@@ -103,6 +105,8 @@ export function Hero() {
     >
       <LiquidGlass
         opacity={0.4}
+        borderOpacity={0.42}
+        tone="light"
         refraction={23}
         thickness={0.5}
         radius={32}
@@ -121,12 +125,16 @@ export function Hero() {
 
 | Prop | Type | Default | Range |
 | --- | --- | --- | --- |
-| `opacity` | number | `0.4` | 0–1 |
+| `opacity` | number | `0.4` | 0–1, glass surface |
+| `borderOpacity` | number | `0.42` | 0–1, optical rim and highlights (independent of surface) |
+| `tone` | `"light" \| "dark"` | `"light"` | Controls surface tint; does not change the glass silhouette |
 | `refraction` | number | `23` | 0–60 CSS-pixel displacement |
 | `thickness` | number | `0.5` | 0.5–6 CSS pixels |
 | `radius` | number | `28` | CSS pixels |
 | `renderMode` | `"auto" \| "canvas" \| "webgl"` | `"auto"` | Canvas disables WebGL; other modes fall back to Canvas 2D if unavailable |
 | `onRendererChange` | `(mode: "none" \| "canvas" \| "webgl") => void` | — | Reports active engine |
+
+Refraction is concentrated in a narrow band at the optical edge. Canvas 2D and WebGL use matching rounded-rectangle edge normals; the center is not displaced. The border opacity controls the shell, contact line, and highlight together. The demo previews dark glass, while the library defaults to light for existing users.
 
 The thickness value controls an asymmetric inner shell (top/left narrower, bottom/right slightly thicker), not an equally thick CSS border. The outside silhouette remains fixed. A WebGL context is requested only when selected. Canvas mode uses CPU image sampling and does not initialize WebGL.
 
