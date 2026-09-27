@@ -2,6 +2,22 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { GlassProvider, GlassScene, LiquidGlass } from "../index";
 import type { ActiveRenderer, RefractionMode } from "../index";
 
+function OpticalStar() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.65}
+      strokeLinecap="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M12 2.75v18.5M2.75 12h18.5M5.46 5.46l13.08 13.08M18.54 5.46 5.46 18.54" />
+    </svg>
+  );
+}
+
 export function App() {
   const [opacity, setOpacity] = useState(0.4);
   const [refraction, setRefraction] = useState(23);
@@ -90,7 +106,7 @@ export function App() {
     <div className="page">
       <header className="topbar">
         <a className="brand" href="#" aria-label="Luma Glass home">
-          <span className="brand-symbol">✳</span>
+          <span className="brand-symbol" aria-hidden="true"><OpticalStar /></span>
           <span>LUMA GLASS</span>
         </a>
         <a
@@ -132,7 +148,7 @@ export function App() {
               onRendererChange={setActiveRenderer}
             >
             <div className="glass-inner">
-              <div className="glass-eyebrow"><span className="glass-star">✳</span> OPTICAL MATERIAL</div>
+              <div className="glass-eyebrow"><span className="glass-star" aria-hidden="true"><OpticalStar /></span> OPTICAL MATERIAL</div>
               <div className="glass-title">Liquid<br /><span>Glass.</span></div>
               <div className="glass-description">Light, depth and refraction.</div>
               <div className="glass-pill">LIVE REFRACTION <span aria-hidden="true">↗</span></div>

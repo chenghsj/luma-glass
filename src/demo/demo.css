@@ -10,7 +10,8 @@ button,input{font:inherit}
 .page{min-height:100vh;background:radial-gradient(ellipse at 5% 0%,#e4e8fa 0%,transparent 53%),#f4f5f9}
 .topbar{max-width:1160px;margin:auto;padding:25px 35px;display:flex;align-items:center;justify-content:space-between}
 .brand{display:inline-flex;align-items:center;gap:11px;font-size:12px;font-weight:850;letter-spacing:1.3px}
-.brand-symbol{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#fff,#cecff4);border:1px solid #fff;color:#6d77ac;font-size:22px;box-shadow:0 3px 12px #737ca527}
+.brand-symbol{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#fff,#cecff4);border:1px solid #fff;color:#6d77ac;box-shadow:0 3px 12px #737ca527}
+.brand-symbol svg{display:block;width:20px;height:20px}
 .github-link{font-size:12px;font-weight:750;border:1px solid #dfe2ed;border-radius:100px;background:#ffffffad;padding:10px 17px}
 .github-link span{margin-left:13px}
 .main{max-width:1060px;margin:34px auto 0;padding:0 35px 70px}
@@ -25,7 +26,8 @@ button,input{font:inherit}
 .demo-glass .glass-inner{-webkit-user-select:none;user-select:none}
 .glass-inner{height:100%;padding:clamp(18px,3.7vw,41px);display:flex;flex-direction:column;align-items:flex-start;color:#33415f}
 .glass-eyebrow{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:1.7px;font-size:clamp(8px,1.1vw,11px)}
-.glass-star{display:grid;place-items:center;width:24px;height:24px;border:1px solid #ffffffc9;border-radius:50%;background:#ffffff85;color:#7080af;font-size:19px;letter-spacing:0}
+.glass-star{display:grid;place-items:center;width:24px;height:24px;border:1px solid #ffffffc9;border-radius:50%;background:#ffffff85;color:#7080af;flex-shrink:0}
+.glass-star svg{display:block;width:17px;height:17px}
 .glass-title{font-size:clamp(40px,8.5vw,83px);font-weight:760;letter-spacing:-.079em;line-height:.92;margin-top:auto;margin-bottom:13px}
 .glass-title span{color:#fff;text-shadow:0 1px 0 #ffffff38}
 .glass-description{font-weight:550;font-size:clamp(10px,1.35vw,13px);color:#4b5879}
@@ -56,7 +58,8 @@ button,input{font:inherit}
 @media(max-width:420px){
   .glass-inner{padding:15px 12px}
   .glass-eyebrow{font-size:8px;letter-spacing:1px}
-  .glass-star{width:20px;height:20px;font-size:16px}
+  .glass-star{width:20px;height:20px}
+  .glass-star svg{width:14px;height:14px}
   .glass-title{font-size:42px;margin-bottom:11px}
   .glass-description{font-size:10px}
 }
