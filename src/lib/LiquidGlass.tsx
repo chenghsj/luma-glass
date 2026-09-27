@@ -161,6 +161,9 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
       const observer = new ResizeObserver(schedule);
       observer.observe(sceneRoot);
       observer.observe(root);
+      // Moving a glass via left/top or transform does not fire ResizeObserver.
+      const positionObserver = new MutationObserver(schedule);
+      positionObserver.observe(root, { attributes: true, attributeFilter: ["style", "class"] });
       window.addEventListener("scroll", schedule, true);
       window.addEventListener("resize", schedule);
       schedule();
@@ -168,6 +171,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
       return () => {
         if (pending) window.cancelAnimationFrame(pending);
         observer.disconnect();
+        positionObserver.disconnect();
         window.removeEventListener("scroll", schedule, true);
         window.removeEventListener("resize", schedule);
         currentRenderer.dispose();

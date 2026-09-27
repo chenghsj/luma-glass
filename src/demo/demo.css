@@ -19,7 +19,9 @@ button,input{font:inherit}
 .heading h1{margin:13px 0 11px;font-size:clamp(31px,5vw,55px);letter-spacing:-.065em;line-height:1.08;font-weight:760}
 .heading p{font-size:14px;line-height:1.6;color:#72809b;margin:0 auto;max-width:530px}
 .demo-stage{width:100%;aspect-ratio:760/470;max-height:590px;border-radius:21px;box-shadow:0 12px 42px #565a8b17}
-.demo-glass{position:absolute;left:16.6%;top:17.6%;width:63.5%;height:65.1%}
+.demo-glass{position:absolute;left:16.6%;top:17.6%;width:63.5%;height:65.1%;cursor:grab;touch-action:none}
+.demo-glass.is-dragging{cursor:grabbing}
+.demo-glass .glass-inner{-webkit-user-select:none;user-select:none}
 .glass-inner{height:100%;padding:clamp(18px,3.7vw,41px);display:flex;flex-direction:column;align-items:flex-start;color:#33415f}
 .glass-eyebrow{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:1.7px;font-size:clamp(8px,1.1vw,11px)}
 .glass-star{display:grid;place-items:center;width:24px;height:24px;border:1px solid #ffffffc9;border-radius:50%;background:#ffffff85;color:#7080af;font-size:19px;letter-spacing:0}

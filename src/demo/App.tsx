@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { GlassProvider, GlassScene, LiquidGlass } from "../index";
 import type { ActiveRenderer, RefractionMode } from "../index";
 
@@ -9,6 +9,65 @@ export function App() {
   const [thickness, setThickness] = useState(1.8);
   const [renderMode, setRenderMode] = useState<RefractionMode>("canvas");
   const [activeRenderer, setActiveRenderer] = useState<ActiveRenderer>("none");
+  const glassRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    left: number;
+    top: number;
+  } | null>(null);
+
+  const onGlassPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    if (event.target instanceof Element &&
+        event.target.closest("a, button, input, select, textarea, [data-no-drag]")) return;
+    const glass = event.currentTarget;
+    const scene = glass.parentElement;
+    if (!scene) return;
+    const sceneRect = scene.getBoundingClientRect();
+    const glassRect = glass.getBoundingClientRect();
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      left: glassRect.left - sceneRect.left,
+      top: glassRect.top - sceneRect.top,
+    };
+    glass.setPointerCapture(event.pointerId);
+    glass.classList.add("is-dragging");
+  };
+
+  const onGlassPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const glass = event.currentTarget;
+    const scene = glass.parentElement;
+    if (!scene) return;
+    const sceneRect = scene.getBoundingClientRect();
+    const glassRect = glass.getBoundingClientRect();
+    const left = Math.max(0, Math.min(
+      sceneRect.width - glassRect.width,
+      drag.left + event.clientX - drag.startX,
+    ));
+    const top = Math.max(0, Math.min(
+      sceneRect.height - glassRect.height,
+      drag.top + event.clientY - drag.startY,
+    ));
+    // Percentages preserve the card's position when the demo is resized.
+    glass.style.left = `${(left / sceneRect.width) * 100}%`;
+    glass.style.top = `${(top / sceneRect.height) * 100}%`;
+  };
+
+  const onGlassPointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (dragRef.current?.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    const glass = event.currentTarget;
+    glass.classList.remove("is-dragging");
+    if (glass.hasPointerCapture(event.pointerId)) {
+      glass.releasePointerCapture(event.pointerId);
+    }
+  };
 
   return (
     <div className="page">
@@ -47,6 +106,13 @@ export function App() {
           <GlassScene image={`${import.meta.env.BASE_URL}scene.svg`} className="demo-stage">
             <LiquidGlass
               className="demo-glass"
+              ref={glassRef}
+              title="Drag to move the glass card"
+              onPointerDown={onGlassPointerDown}
+              onPointerMove={onGlassPointerMove}
+              onPointerUp={onGlassPointerEnd}
+              onPointerCancel={onGlassPointerEnd}
+              onLostPointerCapture={onGlassPointerEnd}
               onRendererChange={setActiveRenderer}
             >
             <div className="glass-inner">
@@ -59,7 +125,7 @@ export function App() {
             <LiquidGlass className="demo-shared-chip">
               <span>SHARED DEFAULTS</span>
             </LiquidGlass>
-            <div className="scene-label">FIXED SHAPE <span>·</span> NO OUTER BLUR</div>
+            <div className="scene-label">DRAG THE CARD <span>·</span> NO OUTER BLUR</div>
           </GlassScene>
         </GlassProvider>
 
@@ -120,6 +186,8 @@ export function App() {
                 setRefraction(23);
                 setThickness(1.8);
                 setShowOriginal(false);
+                glassRef.current?.style.removeProperty("left");
+                glassRef.current?.style.removeProperty("top");
               }}>↺ &nbsp; Reset</button>
             </div>
           </div>

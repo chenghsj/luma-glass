@@ -44,13 +44,66 @@ function App() {
     const [thickness, setThickness] = (0, react_1.useState)(1.8);
     const [renderMode, setRenderMode] = (0, react_1.useState)("canvas");
     const [activeRenderer, setActiveRenderer] = (0, react_1.useState)("none");
+    const glassRef = (0, react_1.useRef)(null);
+    const dragRef = (0, react_1.useRef)(null);
+    const onGlassPointerDown = (event) => {
+      if (!event.isPrimary || event.button !== 0) return;
+      if (event.target instanceof Element &&
+          event.target.closest("a, button, input, select, textarea, [data-no-drag]")) return;
+      const glass = event.currentTarget;
+      const scene = glass.parentElement;
+      if (!scene) return;
+      const sceneRect = scene.getBoundingClientRect();
+      const glassRect = glass.getBoundingClientRect();
+      dragRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        left: glassRect.left - sceneRect.left,
+        top: glassRect.top - sceneRect.top,
+      };
+      glass.setPointerCapture(event.pointerId);
+      glass.classList.add("is-dragging");
+    };
+
+    const onGlassPointerMove = (event) => {
+      const drag = dragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      const glass = event.currentTarget;
+      const scene = glass.parentElement;
+      if (!scene) return;
+      const sceneRect = scene.getBoundingClientRect();
+      const glassRect = glass.getBoundingClientRect();
+      const left = Math.max(0, Math.min(
+        sceneRect.width - glassRect.width,
+        drag.left + event.clientX - drag.startX,
+      ));
+      const top = Math.max(0, Math.min(
+        sceneRect.height - glassRect.height,
+        drag.top + event.clientY - drag.startY,
+      ));
+      // Percentages preserve the card's position when the demo is resized.
+      glass.style.left = `${(left / sceneRect.width) * 100}%`;
+      glass.style.top = `${(top / sceneRect.height) * 100}%`;
+    };
+
+    const onGlassPointerEnd = (event) => {
+      if (dragRef.current?.pointerId !== event.pointerId) return;
+      dragRef.current = null;
+      const glass = event.currentTarget;
+      glass.classList.remove("is-dragging");
+      if (glass.hasPointerCapture(event.pointerId)) {
+        glass.releasePointerCapture(event.pointerId);
+      }
+    };
+
     return ((0, jsx_runtime_1.jsxs)("div", { className: "page", children: [(0, jsx_runtime_1.jsxs)("header", { className: "topbar", children: [(0, jsx_runtime_1.jsxs)("a", { className: "brand", href: "#", "aria-label": "Luma Glass home", children: [(0, jsx_runtime_1.jsx)("span", { className: "brand-symbol", children: "\u2733" }), (0, jsx_runtime_1.jsx)("span", { children: "LUMA GLASS" })] }), (0, jsx_runtime_1.jsxs)("a", { className: "github-link", href: "https://github.com/chenghsj/luma-glass", target: "_blank", rel: "noreferrer", children: ["GitHub ", (0, jsx_runtime_1.jsx)("span", { "aria-hidden": "true", children: "\u2197" })] })] }), (0, jsx_runtime_1.jsxs)("main", { className: "main", children: [(0, jsx_runtime_1.jsxs)("div", { className: "heading", children: [(0, jsx_runtime_1.jsx)("span", { className: "eyebrow", children: "OPEN SOURCE \u00B7 REACT + TYPESCRIPT" }), (0, jsx_runtime_1.jsx)("h1", { children: "Light becomes an interface." }), (0, jsx_runtime_1.jsx)("p", { children: "A crisp, fixed glass silhouette with adjustable refraction, translucency, and optical edge thickness." })] }), (0, jsx_runtime_1.jsx)(index_1.GlassProvider, { defaults: {
                             opacity,
                             refraction: showOriginal ? 0 : refraction,
                             thickness,
                             radius: 40,
                             renderMode,
-                        }, children: (0, jsx_runtime_1.jsxs)(index_1.GlassScene, { image: `${"/luma-glass/"}scene.svg`, className: "demo-stage", children: [(0, jsx_runtime_1.jsx)(index_1.LiquidGlass, { className: "demo-glass", onRendererChange: setActiveRenderer, children: (0, jsx_runtime_1.jsxs)("div", { className: "glass-inner", children: [(0, jsx_runtime_1.jsxs)("div", { className: "glass-eyebrow", children: [(0, jsx_runtime_1.jsx)("span", { className: "glass-star", children: "\u2733" }), " OPTICAL MATERIAL"] }), (0, jsx_runtime_1.jsxs)("div", { className: "glass-title", children: ["Liquid", (0, jsx_runtime_1.jsx)("br", {}), (0, jsx_runtime_1.jsx)("span", { children: "Glass." })] }), (0, jsx_runtime_1.jsx)("div", { className: "glass-description", children: "Light, depth and refraction." }), (0, jsx_runtime_1.jsxs)("div", { className: "glass-pill", children: ["LIVE REFRACTION ", (0, jsx_runtime_1.jsx)("span", { "aria-hidden": "true", children: "\u2197" })] })] }) }), (0, jsx_runtime_1.jsx)(index_1.LiquidGlass, { className: "demo-shared-chip", children: (0, jsx_runtime_1.jsx)("span", { children: "SHARED DEFAULTS" }) }), (0, jsx_runtime_1.jsxs)("div", { className: "scene-label", children: ["FIXED SHAPE ", (0, jsx_runtime_1.jsx)("span", { children: "\u00B7" }), " NO OUTER BLUR"] })] }) }), (0, jsx_runtime_1.jsxs)("section", { className: "controls", "aria-label": "Glass appearance controls", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "opacity", children: "Glass opacity" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "opacity", children: [Math.round(opacity * 100), "%"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "opacity", type: "range", min: "0", max: "0.75", step: "0.01", value: opacity, onChange: (event) => setOpacity(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Clear" }), (0, jsx_runtime_1.jsx)("span", { children: "Milky" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "refraction", children: "Refraction" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "refraction", children: [refraction, " / 60"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "refraction", type: "range", min: "0", max: "60", step: "1", value: refraction, onChange: (event) => {
+                        }, children: (0, jsx_runtime_1.jsxs)(index_1.GlassScene, { image: `${"/luma-glass/"}scene.svg`, className: "demo-stage", children: [(0, jsx_runtime_1.jsx)(index_1.LiquidGlass, { className: "demo-glass", ref: glassRef, title: "Drag to move the glass card", onPointerDown: onGlassPointerDown, onPointerMove: onGlassPointerMove, onPointerUp: onGlassPointerEnd, onPointerCancel: onGlassPointerEnd, onLostPointerCapture: onGlassPointerEnd, onRendererChange: setActiveRenderer, children: (0, jsx_runtime_1.jsxs)("div", { className: "glass-inner", children: [(0, jsx_runtime_1.jsxs)("div", { className: "glass-eyebrow", children: [(0, jsx_runtime_1.jsx)("span", { className: "glass-star", children: "\u2733" }), " OPTICAL MATERIAL"] }), (0, jsx_runtime_1.jsxs)("div", { className: "glass-title", children: ["Liquid", (0, jsx_runtime_1.jsx)("br", {}), (0, jsx_runtime_1.jsx)("span", { children: "Glass." })] }), (0, jsx_runtime_1.jsx)("div", { className: "glass-description", children: "Light, depth and refraction." }), (0, jsx_runtime_1.jsxs)("div", { className: "glass-pill", children: ["LIVE REFRACTION ", (0, jsx_runtime_1.jsx)("span", { "aria-hidden": "true", children: "\u2197" })] })] }) }), (0, jsx_runtime_1.jsx)(index_1.LiquidGlass, { className: "demo-shared-chip", children: (0, jsx_runtime_1.jsx)("span", { children: "SHARED DEFAULTS" }) }), (0, jsx_runtime_1.jsxs)("div", { className: "scene-label", children: ["DRAG THE CARD ", (0, jsx_runtime_1.jsx)("span", { children: "\u00B7" }), " NO OUTER BLUR"] })] }) }), (0, jsx_runtime_1.jsxs)("section", { className: "controls", "aria-label": "Glass appearance controls", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "opacity", children: "Glass opacity" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "opacity", children: [Math.round(opacity * 100), "%"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "opacity", type: "range", min: "0", max: "0.75", step: "0.01", value: opacity, onChange: (event) => setOpacity(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Clear" }), (0, jsx_runtime_1.jsx)("span", { children: "Milky" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "refraction", children: "Refraction" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "refraction", children: [refraction, " / 60"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "refraction", type: "range", min: "0", max: "60", step: "1", value: refraction, onChange: (event) => {
                                             setRefraction(Number(event.target.value));
                                             setShowOriginal(false);
                                         } }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "None" }), (0, jsx_runtime_1.jsx)("span", { children: "Strong" })] }), (0, jsx_runtime_1.jsx)("p", { className: "control-hint", children: "Compare the Lower Layer card border behind the glass." })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "thickness", children: "Optical edge thickness" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "thickness", children: [thickness.toFixed(1), " px"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "thickness", type: "range", min: "0.5", max: "6", step: "0.1", value: thickness, onChange: (event) => setThickness(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Thin" }), (0, jsx_runtime_1.jsx)("span", { children: "Thick" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "controls-bottom", children: [(0, jsx_runtime_1.jsxs)("span", { className: "status", children: [(0, jsx_runtime_1.jsx)("i", {}), " ", showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"] }), (0, jsx_runtime_1.jsxs)("div", { className: "control-actions", children: [(0, jsx_runtime_1.jsxs)("label", { className: "render-picker", htmlFor: "render-mode", children: ["Renderer", (0, jsx_runtime_1.jsxs)("select", { id: "render-mode", value: renderMode, onChange: (event) => setRenderMode(event.target.value), children: [(0, jsx_runtime_1.jsx)("option", { value: "canvas", children: "Canvas 2D \u00B7 no WebGL" }), (0, jsx_runtime_1.jsx)("option", { value: "auto", children: "Auto \u00B7 WebGL \u2192 Canvas" }), (0, jsx_runtime_1.jsx)("option", { value: "webgl", children: "WebGL \u00B7 Canvas fallback" })] })] }), (0, jsx_runtime_1.jsx)("button", { type: "button", "aria-pressed": showOriginal, onClick: () => setShowOriginal((value) => !value), children: showOriginal ? "Show refraction" : "Show original" }), (0, jsx_runtime_1.jsx)("button", { type: "button", onClick: () => {
@@ -58,6 +111,8 @@ function App() {
                                                     setRefraction(23);
                                                     setThickness(1.8);
                                                     setShowOriginal(false);
+                                                    glassRef.current?.style.removeProperty("left");
+                                                    glassRef.current?.style.removeProperty("top");
                                                 }, children: "\u21BA \u00A0 Reset" })] })] })] }), (0, jsx_runtime_1.jsx)("p", { className: "footnote", children: "The sample background is an SVG image. Refraction applies to this image, not arbitrary DOM elements. Use a same-origin or CORS-enabled image in your own scene." })] })] }));
 }
 
@@ -278,6 +333,8 @@ exports.LiquidGlass = (0, react_1.forwardRef)(function LiquidGlass({ opacity: op
         const observer = new ResizeObserver(schedule);
         observer.observe(sceneRoot);
         observer.observe(root);
+        const positionObserver = new MutationObserver(schedule);
+        positionObserver.observe(root, { attributes: true, attributeFilter: ["style", "class"] });
         window.addEventListener("scroll", schedule, true);
         window.addEventListener("resize", schedule);
         schedule();
@@ -285,6 +342,7 @@ exports.LiquidGlass = (0, react_1.forwardRef)(function LiquidGlass({ opacity: op
             if (pending)
                 window.cancelAnimationFrame(pending);
             observer.disconnect();
+            positionObserver.disconnect();
             window.removeEventListener("scroll", schedule, true);
             window.removeEventListener("resize", schedule);
             currentRenderer.dispose();
