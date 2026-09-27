@@ -22,7 +22,7 @@ export function App() {
   const [opacity, setOpacity] = useState(0.4);
   const [refraction, setRefraction] = useState(23);
   const [showOriginal, setShowOriginal] = useState(false);
-  const [thickness, setThickness] = useState(1.8);
+  const [thickness, setThickness] = useState(0.5);
   const [renderMode, setRenderMode] = useState<RefractionMode>("canvas");
   const [activeRenderer, setActiveRenderer] = useState<ActiveRenderer>("none");
   const glassRef = useRef<HTMLDivElement>(null);
@@ -213,7 +213,7 @@ export function App() {
               <button type="button" onClick={() => {
                 setOpacity(0.4);
                 setRefraction(23);
-                setThickness(1.8);
+                setThickness(0.5);
                 setShowOriginal(false);
                 dragRef.current = null;
                 glassRef.current?.classList.remove("is-dragging");

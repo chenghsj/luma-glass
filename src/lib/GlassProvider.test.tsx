@@ -11,7 +11,7 @@ describe("GlassProvider", () => {
   it("preserves the built-in defaults outside a provider", () => {
     const markup = renderToStaticMarkup(<LiquidGlass>Standalone</LiquidGlass>);
     expect(markup).toContain("--luma-opacity:0.4");
-    expect(markup).toContain("--luma-thickness:1.8px");
+    expect(markup).toContain("--luma-thickness:0.5px");
     expect(markup).toContain("--luma-radius:28px");
   });
 

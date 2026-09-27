@@ -28,7 +28,7 @@ export interface LiquidGlassProps extends HTMLAttributes<HTMLDivElement> {
   opacity?: number;
   /** Optical displacement in CSS pixels, from 0 to 60. Default: 23. */
   refraction?: number;
-  /** Optical shell thickness in CSS pixels, from 0.5 to 6. Default: 1.8. */
+  /** Optical shell thickness in CSS pixels, from 0.5 to 6. Default: 0.5. */
   thickness?: number;
   /** Fixed glass corner radius in CSS pixels. Default: 28. */
   radius?: number;

@@ -21,7 +21,7 @@ export interface GlassProviderProps {
 const builtInDefaults: Required<GlassDefaults> = {
   opacity: 0.4,
   refraction: 23,
-  thickness: 1.8,
+  thickness: 0.5,
   radius: 28,
   renderMode: "auto",
 };
