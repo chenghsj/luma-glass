@@ -376,7 +376,7 @@
     compare.disabled = true;
     setStatus("Image unavailable · CSS glass only");
   };
-  image.src = "./scene.svg?v=5";
+  image.src = "./scene.svg?v=6";
 
   if ("ResizeObserver" in window) {
     const observer = new ResizeObserver(schedule);

@@ -15,18 +15,6 @@
   <path d="M-96 295C92 98 206 499 406 203S667 37 852 192" stroke-width="3" opacity=".85"/>
   <path d="M-96 361C92 163 206 566 406 269S667 103 852 258" stroke-width="3" opacity=".92"/>
  </g>
- <g fill="none" stroke="#566aab" stroke-opacity=".43" stroke-width="1.9" stroke-linecap="round">
-  <path d="M424 126C447 150 410 194 444 230"/>
-  <path d="M456 116C485 152 445 193 478 236"/>
-  <path d="M490 115C519 150 480 197 511 232"/>
-  <path d="M526 125C553 149 518 192 547 221"/>
- </g>
- <g fill="none" stroke="white" stroke-opacity=".69" stroke-width="1.1" stroke-linecap="round">
-  <path d="M428 125C451 150 414 194 448 230"/>
-  <path d="M460 115C489 152 449 193 482 236"/>
-  <path d="M494 114C523 150 484 197 515 232"/>
-  <path d="M530 124C557 149 522 192 551 221"/>
- </g>
  <text x="26" y="421" fill="white" fill-opacity=".24" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="166" letter-spacing="-11" font-weight="800">fluid.</text>
  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <rect x="438" y="254" width="291" height="161" rx="28" fill="url(#rear)" stroke="white" stroke-opacity=".95" stroke-width="1.5"/>
