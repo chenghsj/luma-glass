@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clamp, getCoverLayout } from "./optics";
+import { clamp, getCoverLayout, lensOverlayAlpha } from "./optics";
 
 describe("getCoverLayout", () => {
   it("crops wide images horizontally to match background-size cover", () => {
@@ -31,5 +31,29 @@ describe("clamp", () => {
     expect(clamp(42, 0, 60)).toBe(42);
     expect(clamp(100, 0, 60)).toBe(60);
     expect(clamp(Number.NaN, 0.5, 6)).toBe(0.5);
+  });
+});
+
+describe("lensOverlayAlpha", () => {
+  it("does not cover the background when refraction is zero", () => {
+    expect(lensOverlayAlpha(0, 0, 1.8)).toBe(0);
+  });
+
+  it("fades in instead of abruptly replacing the scene at strength one", () => {
+    const alpha = lensOverlayAlpha(1, 0, 1.8);
+    expect(alpha).toBeGreaterThan(0);
+    expect(alpha).toBeLessThan(0.1);
+  });
+
+  it("preserves the sharp original image in the glass center", () => {
+    expect(lensOverlayAlpha(60, 140, 1.8)).toBe(0);
+    expect(lensOverlayAlpha(23, 0, 1.8)).toBe(1);
+  });
+
+  it("smoothly feathers the refracted band", () => {
+    const near = lensOverlayAlpha(23, 16, 1.8);
+    const far = lensOverlayAlpha(23, 65, 1.8);
+    expect(near).toBeGreaterThan(far);
+    expect(far).toBeGreaterThan(0);
   });
 });

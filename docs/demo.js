@@ -42,7 +42,14 @@
     "  vec2 offset = direction * influence * (u_strength * 0.92);",
     "  vec2 point = clamp(u_origin + v_uv * u_glassSize + offset, vec2(0.0), u_sceneSize);",
     "  vec2 sourceUv = clamp((point + u_crop) / u_displaySize, vec2(0.0), vec2(1.0));",
-    "  gl_FragColor = texture2D(u_image, sourceUv);",
+    "  float edgeDistance = min(distanceToEdge.x, distanceToEdge.y);",
+    "  float bandEnd = min(105.0, 62.0 + u_strength * 0.48 + u_thickness * 2.0);",
+    "  float edgeFade = clamp((edgeDistance - 10.0) / (bandEnd - 10.0), 0.0, 1.0);",
+    "  float edgeOpacity = 1.0 - edgeFade * edgeFade * (3.0 - 2.0 * edgeFade);",
+    "  float strengthFade = clamp(u_strength / 6.0, 0.0, 1.0);",
+    "  float strengthOpacity = strengthFade * strengthFade * (3.0 - 2.0 * strengthFade);",
+    "  vec4 sampled = texture2D(u_image, sourceUv);",
+    "  gl_FragColor = vec4(sampled.rgb, sampled.a * edgeOpacity * strengthOpacity);",
     "}",
   ].join("\n");
 
@@ -272,6 +279,17 @@
   }
 
 
+  // Mirror the WebGL lens mask for the Canvas 2D fallback.
+  function lensOverlayAlpha(strength, edgeDistance, edgeThickness) {
+    if (strength <= 0) return 0;
+    const strengthFade = Math.max(0, Math.min(1, strength / 6));
+    const strengthOpacity = strengthFade * strengthFade * (3 - 2 * strengthFade);
+    const bandEnd = Math.min(105, 62 + strength * 0.48 + edgeThickness * 2);
+    const edgeFade = Math.max(0, Math.min(1, (edgeDistance - 10) / (bandEnd - 10)));
+    const edgeOpacity = 1 - edgeFade * edgeFade * (3 - 2 * edgeFade);
+    return edgeOpacity * strengthOpacity;
+  }
+
   function createCanvasRenderer(image) {
     const ctx = cpuCanvas.getContext("2d");
     const source = document.createElement("canvas");
@@ -316,13 +334,19 @@
             const u = (x + 0.5) / width;
             const fx = 0.07 + 0.93 * Math.exp(-Math.min(u, 1 - u) * g.width / falloff);
             const dx = (u * 2 - 1) * fx * strength * 0.92;
+            const edgeDistance = Math.min(
+              Math.min(u, 1 - u) * g.width,
+              Math.min(v, 1 - v) * g.height,
+            );
+            const alpha = lensOverlayAlpha(strength, edgeDistance, edge);
+            if (alpha <= 0) continue;
             const sx = Math.min(sw - 1, Math.max(0, Math.round((ox + u * g.width + dx) * sw / s.width)));
             const sy = Math.min(sh - 1, Math.max(0, Math.round((oy + v * g.height + dy) * sh / s.height)));
             const from = (sy * sw + sx) * 4, to = (y * width + x) * 4;
             out[to] = pixels[from];
             out[to + 1] = pixels[from + 1];
             out[to + 2] = pixels[from + 2];
-            out[to + 3] = pixels[from + 3];
+            out[to + 3] = Math.round(pixels[from + 3] * alpha);
           }
         }
         ctx.putImageData(result, 0, 0);

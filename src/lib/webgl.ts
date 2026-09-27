@@ -40,7 +40,17 @@ void main() {
     vec2(0.0), u_sceneSize
   );
   vec2 sourceUv = clamp((point + u_crop) / u_displaySize, vec2(0.0), vec2(1.0));
-  gl_FragColor = texture2D(u_image, sourceUv);
+  // Refract a lens band, not the whole image. The original SVG stays visible
+  // at the center, so raster texture sampling cannot soften its text.
+  float edgeDistance = min(distanceToEdge.x, distanceToEdge.y);
+  float bandEnd = min(105.0, 62.0 + u_strength * 0.48 + u_thickness * 2.0);
+  float edgeFade = clamp((edgeDistance - 10.0) / (bandEnd - 10.0), 0.0, 1.0);
+  float edgeOpacity = 1.0 - edgeFade * edgeFade * (3.0 - 2.0 * edgeFade);
+  // At strength 1, reveal only ~7% of the displaced image at the rim.
+  float strengthFade = clamp(u_strength / 6.0, 0.0, 1.0);
+  float strengthOpacity = strengthFade * strengthFade * (3.0 - 2.0 * strengthFade);
+  vec4 sampled = texture2D(u_image, sourceUv);
+  gl_FragColor = vec4(sampled.rgb, sampled.a * edgeOpacity * strengthOpacity);
 }
 `;
 

@@ -1,4 +1,4 @@
-import { getCoverLayout } from "./optics";
+import { getCoverLayout, lensOverlayAlpha } from "./optics";
 import type { RefractionFrame, RefractionRenderer } from "./webgl";
 
 /**
@@ -70,6 +70,13 @@ export function createCanvasRefractionRenderer(
             -Math.min(u, 1 - u) * glass.width / falloff,
           );
           const offsetX = (u * 2 - 1) * influenceX * strength * 0.92;
+          const edgeDistance = Math.min(
+            Math.min(u, 1 - u) * glass.width,
+            Math.min(v, 1 - v) * glass.height,
+          );
+          const alpha = lensOverlayAlpha(strength, edgeDistance, thickness);
+          // Transparent center: keep the original image and sharp text.
+          if (alpha <= 0) continue;
           const sx = Math.min(sourceWidth - 1, Math.max(0, Math.round(
             (originX + u * glass.width + offsetX) * sourceWidth / scene.width,
           )));
@@ -81,7 +88,7 @@ export function createCanvasRefractionRenderer(
           destination[to] = pixels[from];
           destination[to + 1] = pixels[from + 1];
           destination[to + 2] = pixels[from + 2];
-          destination[to + 3] = pixels[from + 3];
+          destination[to + 3] = Math.round(pixels[from + 3] * alpha);
         }
       }
       context.putImageData(result, 0, 0);
