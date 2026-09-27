@@ -6,34 +6,31 @@ A small React + TypeScript library for fixed-shape optical glass. Adjust the mil
 
 ## GitHub Pages React demo (without custom Actions)
 
-The public demo at **https://chenghsj.github.io/luma-glass/** now uses the
-**real** `src/demo/App.tsx`, `GlassProvider`, `GlassScene` and
-`LiquidGlass`. The old, manually duplicated `docs/demo.js` renderer was
-removed. Both Canvas 2D and WebGL use the same library source as local Vite.
+The public demo at **https://chenghsj.github.io/luma-glass/** uses the actual
+`src/demo/App.tsx`, `GlassProvider`, `GlassScene` and `LiquidGlass`.
+The checked-in `docs/app.js` is precompiled from those same TypeScript/TSX
+sources. React 18.3.1 and ReactDOM are served locally from `docs/vendor/`;
+visitors no longer download Babel, fetch individual TSX files or rely on a CDN.
+The old duplicate `docs/demo.js` renderer has been removed.
 
-There are two ways to prepare `docs/` on your own computer; neither runs a
-custom GitHub Actions workflow:
+To publish future changes, run `npm install` followed by
+`npm run build:pages` **on your own computer**, then commit the generated
+`docs/`. Vite bundles the production React demo, its runtime and CSS for
+GitHub Pages, with the `/luma-glass/` base path. This is the recommended
+deployment and does not consume custom GitHub Actions minutes.
 
-- **Recommended for production:** run `npm install`, then
-  `npm run build:pages`. Vite bundles the actual React demo, React runtime and
-  library into `docs/`, with `/luma-glass/` asset paths and `.nojekyll`.
-  Commit the generated `docs/` directory. This is the fastest runtime and
-  does not require an external compiler/CDN in visitors' browsers.
-- **Dependency-free source preview:** run `npm run sync:pages` to copy the
-  actual source files, CSS and background into `docs/source/` and `docs/`.
-  The checked-in `docs/index.html` compiles the exact mirrored React source
-  in the visitor's browser using a pinned Babel CDN script and React 18 ESM
-  modules. This preview is functional without npm or GitHub Actions but has
-  CDN requirements and a slower first visit. Use the Vite production build
-  above when you have your project's npm dependencies available.
+If you need to regenerate the current checked-in standalone preview instead,
+run `npm run build:pages:standalone` (also available as `npm run sync:pages`).
+It uses your installed TypeScript compiler to precompile the same React
+components and copies the sample SVG and CSS; the local React UMD bundles are
+copied from `node_modules` when available. **No browser-side compilation**
+occurs with either build command. React and ReactDOM are MIT-licensed; see
+`docs/vendor/REACT_LICENSE.txt`.
 
-Under **Settings → Pages**, leave Source as **Deploy from a branch** and use
+Under **Settings → Pages**, keep Source set to **Deploy from a branch**, using
 `main` / `/docs`. GitHub may run its own Pages publishing workflow; no
-custom build workflow is enabled here.
-
-Because `docs/` is committed output, changes to `src/` must be followed
-by one of the commands above before publishing. This prevents the public
-preview and the actual React component implementations from diverging.
+custom build workflow is enabled here. Always rebuild and commit `docs/`
+after modifying library or demo source.
 
 ## Run the playground
 

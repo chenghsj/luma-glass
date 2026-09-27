@@ -29,8 +29,9 @@
     "preview": "vite preview",
     "build:demo": "vite build --mode pages",
     "preview:demo": "vite preview --mode pages --outDir dist-demo",
-    "sync:pages": "node scripts/sync-pages.mjs",
-    "build:pages": "vite build --mode pages-release && node scripts/finish-pages.mjs"
+    "sync:pages": "npm run build:pages:standalone",
+    "build:pages": "vite build --mode pages-release && node scripts/finish-pages.mjs",
+    "build:pages:standalone": "node scripts/build-pages-standalone.mjs"
   },
   "peerDependencies": {
     "react": "^18.2.0 || ^19.0.0",
