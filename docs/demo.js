@@ -9,6 +9,7 @@
   const refraction = byId("refraction-slider");
   const thickness = byId("thickness");
   const status = byId("render-status");
+  const compare = byId("compare");
   if (!scene || !glass || !canvas || !opacity || !refraction || !thickness) return;
 
   const vertexSource = [
@@ -33,10 +34,10 @@
     "uniform float u_thickness;",
     "void main() {",
     "  vec2 distanceToEdge = min(v_uv, 1.0 - v_uv) * u_glassSize;",
-    "  float falloff = 13.0 + u_thickness * 1.8;",
-    "  vec2 influence = exp(-distanceToEdge / falloff);",
-    "  vec2 direction = sign(v_uv - 0.5);",
-    "  vec2 offset = direction * influence * (u_strength * 0.62);",
+    "  float falloff = max(42.0, min(u_glassSize.x, u_glassSize.y) * 0.23) + u_thickness * 0.8;",
+    "  vec2 influence = mix(vec2(0.07), vec2(1.0), exp(-distanceToEdge / falloff));",
+    "  vec2 direction = v_uv * 2.0 - 1.0;",
+    "  vec2 offset = direction * influence * (u_strength * 0.92);",
     "  vec2 point = clamp(u_origin + v_uv * u_glassSize + offset, vec2(0.0), u_sceneSize);",
     "  vec2 sourceUv = clamp((point + u_crop) / u_displaySize, vec2(0.0), vec2(1.0));",
     "  gl_FragColor = texture2D(u_image, sourceUv);",
@@ -45,6 +46,11 @@
 
   let renderer = null;
   let pending = 0;
+  let showOriginal = false;
+  function syncCompare() {
+    compare.setAttribute("aria-pressed", String(showOriginal));
+    compare.textContent = showOriginal ? "Show refraction" : "Show original";
+  }
   function setStatus(message) {
     status.lastChild.textContent = " " + message;
   }
@@ -58,21 +64,38 @@
   function draw() {
     pending = 0;
     updateControls();
-    if (renderer) renderer.draw();
+    if (renderer) {
+      renderer.draw();
+      canvas.style.opacity = showOriginal || Number(refraction.value) === 0 ? "0" : "1";
+      setStatus(showOriginal ? "Original background · refraction paused" : "WebGL active · watch the contour lines");
+    }
   }
   function schedule() {
     if (!pending) pending = window.requestAnimationFrame(draw);
   }
-  for (const input of [opacity, refraction, thickness]) {
+  for (const input of [opacity, thickness]) {
     input.addEventListener("input", schedule);
   }
+  refraction.addEventListener("input", () => {
+    showOriginal = false;
+    syncCompare();
+    schedule();
+  });
+  compare.addEventListener("click", () => {
+    showOriginal = !showOriginal;
+    syncCompare();
+    schedule();
+  });
   byId("reset").addEventListener("click", () => {
     opacity.value = ".4";
     refraction.value = "23";
     thickness.value = "1.8";
+    showOriginal = false;
+    syncCompare();
     schedule();
   });
   updateControls();
+  syncCompare();
 
   function compile(gl, type, source) {
     const shader = gl.createShader(type);
@@ -176,17 +199,22 @@
   image.onload = () => {
     try {
       renderer = createRenderer(image);
+      compare.disabled = !renderer;
       if (!renderer) setStatus("WebGL unavailable · CSS glass fallback");
-      else setStatus("Image-backed WebGL · CSS optical shell");
+      else setStatus("WebGL active · watch the contour lines");
     } catch (error) {
       renderer = null;
+      compare.disabled = true;
       console.warn("[luma-glass demo] WebGL fallback:", error);
       setStatus("WebGL unavailable · CSS glass fallback");
     }
     schedule();
   };
-  image.onerror = () => setStatus("Image unavailable · CSS glass fallback");
-  image.src = "./scene.svg";
+  image.onerror = () => {
+    compare.disabled = true;
+    setStatus("Image unavailable · CSS glass fallback");
+  };
+  image.src = "./scene.svg?v=2";
 
   if ("ResizeObserver" in window) {
     const observer = new ResizeObserver(schedule);

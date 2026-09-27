@@ -27,11 +27,14 @@ uniform float u_strength;
 uniform float u_thickness;
 
 void main() {
+  // A curved lens samples a broad strip, not just a few edge pixels.
+  // Keep a small center contribution; the direction stays continuous at center.
   vec2 distanceToEdge = min(v_uv, 1.0 - v_uv) * u_glassSize;
-  float falloff = 13.0 + u_thickness * 1.8;
-  vec2 influence = exp(-distanceToEdge / falloff);
-  vec2 direction = sign(v_uv - 0.5);
-  vec2 offset = direction * influence * (u_strength * 0.62);
+  float falloff = max(42.0, min(u_glassSize.x, u_glassSize.y) * 0.23)
+    + u_thickness * 0.8;
+  vec2 influence = mix(vec2(0.07), vec2(1.0), exp(-distanceToEdge / falloff));
+  vec2 direction = v_uv * 2.0 - 1.0;
+  vec2 offset = direction * influence * (u_strength * 0.92);
   vec2 point = clamp(
     u_origin + v_uv * u_glassSize + offset,
     vec2(0.0), u_sceneSize
@@ -172,7 +175,7 @@ export function createRefractionRenderer(
       gl.uniform1f(uniforms.strength, strength);
       gl.uniform1f(uniforms.thickness, thickness);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      canvas.style.opacity = "1";
+      canvas.style.opacity = strength > 0 ? "1" : "0";
     },
     dispose() {
       canvas.style.opacity = "0";

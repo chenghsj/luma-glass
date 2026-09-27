@@ -6,8 +6,8 @@
   <meta name="description" content="Luma Glass — adjustable optical glass demo without a build step." />
   <meta name="theme-color" content="#f1f2f7" />
   <title>Luma Glass — Interactive demo</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <script src="./demo.js" defer></script>
+  <link rel="stylesheet" href="./styles.css?v=2" />
+  <script src="./demo.js?v=2" defer></script>
 </head>
 <body>
   <div class="page">
@@ -25,7 +25,7 @@
         <h1>Light becomes an interface.</h1>
         <p>A fixed glass silhouette with adjustable refraction, translucency, and optical edge thickness.</p>
       </div>
-      <div id="scene" class="luma-scene demo-stage" style="background-color:#b6b4e8;background-image:url('./scene.svg');background-position:center;background-repeat:no-repeat;background-size:cover">
+      <div id="scene" class="luma-scene demo-stage" style="background-color:#b6b4e8;background-image:url('./scene.svg?v=2');background-position:center;background-repeat:no-repeat;background-size:cover">
         <div id="glass" class="luma-glass demo-glass" style="--luma-opacity:.4;--luma-thickness:1.8px;--luma-radius:40px">
           <canvas id="refraction" class="luma-glass__refraction" aria-hidden="true"></canvas>
           <span class="luma-glass__surface" aria-hidden="true"></span>
@@ -53,6 +53,7 @@
           <div class="control-head"><label for="refraction-slider">Refraction</label><output id="refraction-value" for="refraction-slider">23 / 60</output></div>
           <input id="refraction-slider" type="range" min="0" max="60" step="1" value="23" />
           <div class="control-scale"><span>None</span><span>Strong</span></div>
+          <p class="control-hint">Watch the thin contour lines at the right of the glass.</p>
         </div>
         <div class="control">
           <div class="control-head"><label for="thickness">Optical edge thickness</label><output id="thickness-value" for="thickness">1.8 px</output></div>
@@ -60,8 +61,11 @@
           <div class="control-scale"><span>Thin</span><span>Thick</span></div>
         </div>
         <div class="controls-bottom">
-          <span id="render-status" class="status" role="status"><i></i> Image-backed WebGL · CSS optical shell</span>
-          <button id="reset" type="button">↺ &nbsp; Reset</button>
+          <span id="render-status" class="status" role="status"><i></i> Loading refraction…</span>
+          <div class="control-actions">
+            <button id="compare" type="button" aria-pressed="false" disabled>Show original</button>
+            <button id="reset" type="button">↺ &nbsp; Reset</button>
+          </div>
         </div>
       </section>
       <p class="footnote">This static Pages demo mirrors the library's image-backed shader. It does not capture arbitrary DOM behind the glass.</p>

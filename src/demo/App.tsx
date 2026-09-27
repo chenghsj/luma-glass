@@ -4,6 +4,7 @@ import { GlassScene, LiquidGlass } from "../index";
 export function App() {
   const [opacity, setOpacity] = useState(0.4);
   const [refraction, setRefraction] = useState(23);
+  const [showOriginal, setShowOriginal] = useState(false);
   const [thickness, setThickness] = useState(1.8);
 
   return (
@@ -38,7 +39,7 @@ export function App() {
             className="demo-glass"
             radius={40}
             opacity={opacity}
-            refraction={refraction}
+            refraction={showOriginal ? 0 : refraction}
             thickness={thickness}
           >
             <div className="glass-inner">
@@ -70,9 +71,13 @@ export function App() {
             </div>
             <input
               id="refraction" type="range" min="0" max="60" step="1"
-              value={refraction} onChange={(event) => setRefraction(Number(event.target.value))}
+              value={refraction} onChange={(event) => {
+                setRefraction(Number(event.target.value));
+                setShowOriginal(false);
+              }}
             />
             <div className="control-scale"><span>None</span><span>Strong</span></div>
+            <p className="control-hint">Watch the thin contour lines at the right of the glass.</p>
           </div>
           <div className="control">
             <div className="control-head">
@@ -86,12 +91,18 @@ export function App() {
             <div className="control-scale"><span>Thin</span><span>Thick</span></div>
           </div>
           <div className="controls-bottom">
-            <span className="status"><i /> Image-backed WebGL · CSS optical shell</span>
-            <button type="button" onClick={() => {
-              setOpacity(0.4);
-              setRefraction(23);
-              setThickness(1.8);
-            }}>↺ &nbsp; Reset</button>
+            <span className="status"><i /> {showOriginal ? "Original background · refraction paused" : "Image-backed WebGL · CSS optical shell"}</span>
+            <div className="control-actions">
+              <button type="button" aria-pressed={showOriginal} onClick={() => setShowOriginal((value) => !value)}>
+                {showOriginal ? "Show refraction" : "Show original"}
+              </button>
+              <button type="button" onClick={() => {
+                setOpacity(0.4);
+                setRefraction(23);
+                setThickness(1.8);
+                setShowOriginal(false);
+              }}>↺ &nbsp; Reset</button>
+            </div>
           </div>
         </section>
         <p className="footnote">

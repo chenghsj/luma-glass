@@ -18,7 +18,7 @@ The docs folder contains prebuilt HTML, CSS, JavaScript, the background image an
 
 GitHub may still report its internal Pages deployment workflow when publishing from a branch. \`.nojekyll\` bypasses its Jekyll build, but account-level billing limits or Pages eligibility can still prevent publishing. This repository was private at the time of this change. GitHub Free requires a public repository for Pages; GitHub Pro or supported organizational plans can publish Pages from private repositories. A published site may be publicly viewable even if its source repo is private.
 
-The static demo mirrors the library's image-backed shader. If you change the library's UI or shader, update \`docs/\` as well. The optional \`npm run build:demo\` still creates a separate Vite build in \`dist-demo/\` for local verification, but publishing \`docs/\` does not require it.
+The static demo mirrors the library's image-backed shader and includes an original/refracted comparison. Its high-contrast contour lines near the right side of the glass make the displacement easier to inspect. Refraction zero hides the shader canvas, showing the original image. If you change the library's UI or shader, update \`docs/\` as well. The optional \`npm run build:demo\` still creates a separate Vite build in \`dist-demo/\` for local verification, but publishing \`docs/\` does not require it.
 
 ## Run the playground
 
