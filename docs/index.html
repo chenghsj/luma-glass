@@ -3,81 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Luma Glass — adjustable optical glass demo without a build step." />
   <meta name="theme-color" content="#f1f2f7" />
-  <title>Luma Glass — Interactive demo</title>
-  <link rel="stylesheet" href="./styles.css?v=3" />
-  <script src="./demo.js?v=11" defer></script>
+  <meta name="description" content="Luma Glass React component playground." />
+  <title>Luma Glass — React Component Demo</title>
+  <link rel="stylesheet" href="./styles.css?v=react1" />
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1?bundle",
+      "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime?external=react",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?external=react"
+    }
+  }
+  </script>
 </head>
 <body>
-  <div class="page">
-    <header class="topbar">
-      <a class="brand" href="./" aria-label="Luma Glass demo home">
-        <span class="brand-symbol">✳</span><span>LUMA GLASS</span>
-      </a>
-      <a class="github-link" href="https://github.com/chenghsj/luma-glass" target="_blank" rel="noreferrer">
-        GitHub <span aria-hidden="true">↗</span>
-      </a>
-    </header>
-    <main class="main">
-      <div class="heading">
-        <span class="eyebrow">REACT + TYPESCRIPT · OPTICAL UI</span>
-        <h1>Light becomes an interface.</h1>
-        <p>A fixed glass silhouette with adjustable refraction, translucency, and optical edge thickness.</p>
-      </div>
-      <div id="scene" class="luma-scene demo-stage" style="background-color:#b6b4e8;background-image:url('./scene.svg?v=7');background-position:center;background-repeat:no-repeat;background-size:cover">
-        <div id="glass" class="luma-glass demo-glass" style="--luma-opacity:.4;--luma-thickness:1.8px;--luma-radius:40px">
-          <canvas id="refraction" class="luma-glass__refraction" aria-hidden="true"></canvas>
-          <canvas id="canvas-refraction" class="luma-glass__refraction" aria-hidden="true"></canvas>
-          <span class="luma-glass__surface" aria-hidden="true"></span>
-          <span class="luma-glass__shell" aria-hidden="true"></span>
-          <span class="luma-glass__contact" aria-hidden="true"></span>
-          <span class="luma-glass__highlight" aria-hidden="true"></span>
-          <div class="luma-glass__content">
-            <div class="glass-inner">
-              <div class="glass-eyebrow"><span class="glass-star">✳</span> OPTICAL MATERIAL</div>
-              <div class="glass-title">Liquid<br/><span>Glass.</span></div>
-              <div class="glass-description">Light, depth and refraction.</div>
-              <div class="glass-pill">LIVE REFRACTION <span aria-hidden="true">↗</span></div>
-            </div>
-          </div>
-        </div>
-        <div class="scene-label">FIXED SHAPE <span>·</span> NO OUTER BLUR</div>
-      </div>
-      <section class="controls" aria-label="Glass appearance controls">
-        <div class="control">
-          <div class="control-head"><label for="opacity">Glass opacity</label><output id="opacity-value" for="opacity">40%</output></div>
-          <input id="opacity" type="range" min="0" max=".75" step=".01" value=".4" />
-          <div class="control-scale"><span>Clear</span><span>Milky</span></div>
-        </div>
-        <div class="control">
-          <div class="control-head"><label for="refraction-slider">Refraction</label><output id="refraction-value" for="refraction-slider">23 / 60</output></div>
-          <input id="refraction-slider" type="range" min="0" max="60" step="1" value="23" />
-          <div class="control-scale"><span>None</span><span>Strong</span></div>
-          <p class="control-hint">Watch the thin contour lines at the right of the glass.</p>
-        </div>
-        <div class="control">
-          <div class="control-head"><label for="thickness">Optical edge thickness</label><output id="thickness-value" for="thickness">1.8 px</output></div>
-          <input id="thickness" type="range" min=".5" max="6" step=".1" value="1.8" />
-          <div class="control-scale"><span>Thin</span><span>Thick</span></div>
-        </div>
-        <div class="controls-bottom">
-          <span id="render-status" class="status" role="status"><i></i> Loading refraction…</span>
-          <div class="control-actions">
-            <label class="render-picker" for="render-mode">Renderer
-              <select id="render-mode" aria-label="Refraction renderer">
-                <option value="canvas" selected>Canvas 2D · no WebGL</option>
-                <option value="auto">Auto · WebGL → Canvas</option>
-                <option value="webgl">WebGL · Canvas fallback</option>
-              </select>
-            </label>
-            <button id="compare" type="button" aria-pressed="false" disabled>Show original</button>
-            <button id="reset" type="button">↺ &nbsp; Reset</button>
-          </div>
-        </div>
-      </section>
-      <p class="footnote">This demo supports Canvas 2D without WebGL. It refracts the known background image, not arbitrary DOM behind the glass.</p>
-    </main>
-  </div>
+  <div id="root"></div>
+  <div id="boot-status" role="status" aria-live="polite">Loading React components…</div>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.9/babel.min.js" crossorigin="anonymous"></script>
+  <script type="module" src="./boot.js?v=react1"></script>
 </body>
 </html>

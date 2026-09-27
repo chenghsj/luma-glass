@@ -4,21 +4,36 @@ A small React + TypeScript library for fixed-shape optical glass. Adjust the mil
 
 **Status:** first working prototype. `GlassScene` image backgrounds can be refracted with WebGL or CPU Canvas 2D. CSS handles the fixed silhouette and optical edge. Arbitrary DOM behind the glass is not sampled. The package is not published to npm yet.
 
-## GitHub Pages demo (without custom Actions)
+## GitHub Pages React demo (without custom Actions)
 
-The build-free, static Pages demo lives in [docs/](./docs/) and has the three live controls. Once Pages is enabled, its expected URL is **https://chenghsj.github.io/luma-glass/**.
+The public demo at **https://chenghsj.github.io/luma-glass/** now uses the
+**real** `src/demo/App.tsx`, `GlassProvider`, `GlassScene` and
+`LiquidGlass`. The old, manually duplicated `docs/demo.js` renderer was
+removed. Both Canvas 2D and WebGL use the same library source as local Vite.
 
-**Publish it in the GitHub UI:**
+There are two ways to prepare `docs/` on your own computer; neither runs a
+custom GitHub Actions workflow:
 
-1. Open **Settings → Pages** for this repository.
-2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
-3. Select **main** and **/docs**, then click **Save**.
+- **Recommended for production:** run `npm install`, then
+  `npm run build:pages`. Vite bundles the actual React demo, React runtime and
+  library into `docs/`, with `/luma-glass/` asset paths and `.nojekyll`.
+  Commit the generated `docs/` directory. This is the fastest runtime and
+  does not require an external compiler/CDN in visitors' browsers.
+- **Dependency-free source preview:** run `npm run sync:pages` to copy the
+  actual source files, CSS and background into `docs/source/` and `docs/`.
+  The checked-in `docs/index.html` compiles the exact mirrored React source
+  in the visitor's browser using a pinned Babel CDN script and React 18 ESM
+  modules. This preview is functional without npm or GitHub Actions but has
+  CDN requirements and a slower first visit. Use the Vite production build
+  above when you have your project's npm dependencies available.
 
-The docs folder contains prebuilt HTML, CSS, JavaScript, the background image and an empty \`.nojekyll\` file. It can be hosted directly without Vite, npm install or a custom build workflow. Automatic CI is turned off; the CI workflow is available with manual dispatch when your minutes are available again. The former custom Pages workflow was removed.
+Under **Settings → Pages**, leave Source as **Deploy from a branch** and use
+`main` / `/docs`. GitHub may run its own Pages publishing workflow; no
+custom build workflow is enabled here.
 
-GitHub may still report its internal Pages deployment workflow when publishing from a branch. \`.nojekyll\` bypasses its Jekyll build, but account-level billing limits or Pages eligibility can still prevent publishing. This repository was private at the time of this change. GitHub Free requires a public repository for Pages; GitHub Pro or supported organizational plans can publish Pages from private repositories. A published site may be publicly viewable even if its source repo is private.
-
-The static demo defaults to Canvas 2D without WebGL and has an original/refracted comparison plus a selectable renderer. SVG backgrounds are rasterized into an offscreen Canvas before WebGL texture upload, avoiding direct SVG texImage2D failures in Chrome. The WebGL SVG texture now matches the covered scene's device-pixel resolution (with GPU/memory limits), rather than enlarging a low-resolution bitmap. The sample SVG also has explicit width and height matching its viewBox. Its high-contrast contour lines near the right side of the glass make the displacement easier to inspect. The original continuous refraction is restored: both WebGL and Canvas 2D sample one displaced background image across the fixed glass shape, without semi-transparent edge overlays or artificial lens-band seams. Strength zero hides the renderer canvas and shows the original image. SVG rasterization and device-pixel-resolution WebGL textures remain enabled. If you change the library's UI or shader, update \`docs/\` as well. The optional \`npm run build:demo\` still creates a separate Vite build in \`dist-demo/\` for local verification, but publishing \`docs/\` does not require it.
+Because `docs/` is committed output, changes to `src/` must be followed
+by one of the commands above before publishing. This prevents the public
+preview and the actual React component implementations from diverging.
 
 ## Run the playground
 

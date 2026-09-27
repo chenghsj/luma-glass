@@ -3,10 +3,10 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig(({ command, mode }) => ({
-  base: mode === "pages" ? "/luma-glass/" : "/",
+  base: mode === "pages" || mode === "pages-release" ? "/luma-glass/" : "/",
   plugins: [react()],
   build:
-    command === "build" && mode !== "pages"
+    command === "build" && mode !== "pages" && mode !== "pages-release"
       ? {
           lib: {
             entry: resolve(process.cwd(), "src/index.ts"),
@@ -18,5 +18,5 @@ export default defineConfig(({ command, mode }) => ({
             external: ["react", "react-dom", "react/jsx-runtime"],
           },
         }
-      : { outDir: "dist-demo" },
+      : { outDir: mode === "pages-release" ? "docs" : "dist-demo", emptyOutDir: mode === "pages-release" },
 }));
