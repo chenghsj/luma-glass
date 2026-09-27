@@ -5,8 +5,8 @@
 }
 
 .luma-glass {
-  --luma-opacity: .4;
-  --luma-border-opacity: .1;
+  --luma-opacity: .1;
+  --luma-border-opacity: .42;
   --luma-thickness: 0.5px;
   --luma-radius: 28px;
   --luma-top: calc(var(--luma-thickness) * .68);

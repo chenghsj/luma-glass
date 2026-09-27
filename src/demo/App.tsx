@@ -19,8 +19,8 @@ function OpticalStar() {
 }
 
 export function App() {
-  const [opacity, setOpacity] = useState(0.6);
-  const [borderOpacity, setBorderOpacity] = useState(0.1);
+  const [opacity, setOpacity] = useState(0.1);
+  const [borderOpacity, setBorderOpacity] = useState(0.38);
   const [tone, setTone] = useState<"light" | "dark">("dark");
   const [refraction, setRefraction] = useState(23);
   const [showOriginal, setShowOriginal] = useState(false);
@@ -233,8 +233,8 @@ export function App() {
                 {showOriginal ? "Show refraction" : "Show original"}
               </button>
               <button type="button" onClick={() => {
-                setOpacity(0.6);
-                setBorderOpacity(0.1);
+                setOpacity(0.1);
+                setBorderOpacity(0.38);
                 setTone("dark");
                 setRefraction(23);
                 setThickness(0.5);

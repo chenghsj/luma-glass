@@ -62,8 +62,8 @@ export function Example() {
   return (
     <GlassProvider
       defaults={{
-        opacity: 0.4,
-        borderOpacity: 0.1,
+        opacity: 0.1,
+        borderOpacity: 0.42,
         tone: "light",
         refraction: 23,
         thickness: 0.5,
@@ -104,8 +104,8 @@ export function Hero() {
       style={{ position: "relative", minHeight: 460 }}
     >
       <LiquidGlass
-        opacity={0.4}
-        borderOpacity={0.1}
+        opacity={0.1}
+        borderOpacity={0.42}
         tone="light"
         refraction={23}
         thickness={0.5}
@@ -125,8 +125,8 @@ export function Hero() {
 
 | Prop | Type | Default | Range |
 | --- | --- | --- | --- |
-| `opacity` | number | `0.4` | 0–1, glass surface |
-| `borderOpacity` | number | `0.1` | 0–1, optical rim and highlights (independent of surface) |
+| `opacity` | number | `0.1` | 0–1, glass surface |
+| `borderOpacity` | number | `0.42` | 0–1, optical rim and highlights (independent of surface) |
 | `tone` | `"light" \| "dark"` | `"light"` | Controls surface tint; does not change the glass silhouette |
 | `refraction` | number | `23` | 0–60 CSS-pixel displacement |
 | `thickness` | number | `0.5` | 0.5–6 CSS pixels |

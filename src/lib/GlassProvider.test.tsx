@@ -10,8 +10,8 @@ function ModeProbe() {
 describe("GlassProvider", () => {
   it("preserves the built-in defaults outside a provider", () => {
     const markup = renderToStaticMarkup(<LiquidGlass>Standalone</LiquidGlass>);
-    expect(markup).toContain("--luma-opacity:0.4");
-    expect(markup).toContain("--luma-border-opacity:0.1");
+    expect(markup).toContain("--luma-opacity:0.1");
+    expect(markup).toContain("--luma-border-opacity:0.42");
     expect(markup).toContain('data-tone="light"');
     expect(markup).toContain("--luma-thickness:0.5px");
     expect(markup).toContain("--luma-radius:28px");
