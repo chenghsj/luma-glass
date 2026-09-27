@@ -39,7 +39,10 @@
     "  float falloff = max(42.0, min(u_glassSize.x, u_glassSize.y) * 0.23) + u_thickness * 0.8;",
     "  vec2 influence = mix(vec2(0.07), vec2(1.0), exp(-distanceToEdge / falloff));",
     "  vec2 direction = v_uv * 2.0 - 1.0;",
-    "  vec2 offset = direction * influence * (u_strength * 0.92);",
+    "  float edgeDistance = min(distanceToEdge.x, distanceToEdge.y);",
+    "  float anchorWidth = max(24.0, u_strength * 1.75);",
+    "  float edgeAnchor = smoothstep(0.0, anchorWidth, edgeDistance);",
+    "  vec2 offset = direction * influence * (u_strength * 0.92) * edgeAnchor;",
     "  vec2 point = clamp(u_origin + v_uv * u_glassSize + offset, vec2(0.0), u_sceneSize);",
     "  vec2 sourceUv = clamp((point + u_crop) / u_displaySize, vec2(0.0), vec2(1.0));",
     "  gl_FragColor = texture2D(u_image, sourceUv);",
@@ -316,8 +319,15 @@
             const u = (x + 0.5) / width;
             const fx = 0.07 + 0.93 * Math.exp(-Math.min(u, 1 - u) * g.width / falloff);
             const dx = (u * 2 - 1) * fx * strength * 0.92;
-            const sx = Math.min(sw - 1, Math.max(0, Math.round((ox + u * g.width + dx) * sw / s.width)));
-            const sy = Math.min(sh - 1, Math.max(0, Math.round((oy + v * g.height + dy) * sh / s.height)));
+            const edgeDistance = Math.min(
+              Math.min(u, 1 - u) * g.width,
+              Math.min(v, 1 - v) * g.height,
+            );
+            const anchorWidth = Math.max(24, strength * 1.75);
+            const t = Math.max(0, Math.min(1, edgeDistance / anchorWidth));
+            const anchor = t * t * (3 - 2 * t);
+            const sx = Math.min(sw - 1, Math.max(0, Math.round((ox + u * g.width + dx * anchor) * sw / s.width)));
+            const sy = Math.min(sh - 1, Math.max(0, Math.round((oy + v * g.height + dy * anchor) * sh / s.height)));
             const from = (sy * sw + sx) * 4, to = (y * width + x) * 4;
             out[to] = pixels[from];
             out[to + 1] = pixels[from + 1];

@@ -1,4 +1,4 @@
-import { getCoverLayout } from "./optics";
+import { edgeContinuityFactor, getCoverLayout } from "./optics";
 import type { RefractionFrame, RefractionRenderer } from "./webgl";
 
 /**
@@ -70,11 +70,16 @@ export function createCanvasRefractionRenderer(
             -Math.min(u, 1 - u) * glass.width / falloff,
           );
           const offsetX = (u * 2 - 1) * influenceX * strength * 0.92;
+          const edgeDistance = Math.min(
+            Math.min(u, 1 - u) * glass.width,
+            Math.min(v, 1 - v) * glass.height,
+          );
+          const anchor = edgeContinuityFactor(strength, edgeDistance);
           const sx = Math.min(sourceWidth - 1, Math.max(0, Math.round(
-            (originX + u * glass.width + offsetX) * sourceWidth / scene.width,
+            (originX + u * glass.width + offsetX * anchor) * sourceWidth / scene.width,
           )));
           const sy = Math.min(sourceHeight - 1, Math.max(0, Math.round(
-            (originY + v * glass.height + offsetY) * sourceHeight / scene.height,
+            (originY + v * glass.height + offsetY * anchor) * sourceHeight / scene.height,
           )));
           const from = (sy * sourceWidth + sx) * 4;
           const to = (y * width + x) * 4;
