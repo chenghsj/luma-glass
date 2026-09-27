@@ -36,20 +36,18 @@
     "uniform float u_thickness;",
     "void main() {",
     "  vec2 distanceToEdge = min(v_uv, 1.0 - v_uv) * u_glassSize;",
+    "  float edgeDistance = min(distanceToEdge.x, distanceToEdge.y);",
+    "  float bandEnd = min(105.0, 62.0 + u_strength * 0.48 + u_thickness * 2.0);",
     "  float falloff = max(42.0, min(u_glassSize.x, u_glassSize.y) * 0.23) + u_thickness * 0.8;",
     "  vec2 influence = mix(vec2(0.07), vec2(1.0), exp(-distanceToEdge / falloff));",
     "  vec2 direction = v_uv * 2.0 - 1.0;",
-    "  vec2 offset = direction * influence * (u_strength * 0.92);",
+    "  float warpTaper = 1.0 - smoothstep(bandEnd - 27.0, bandEnd - 3.0, edgeDistance);",
+    "  vec2 offset = direction * influence * (u_strength * 0.92) * warpTaper;",
     "  vec2 point = clamp(u_origin + v_uv * u_glassSize + offset, vec2(0.0), u_sceneSize);",
     "  vec2 sourceUv = clamp((point + u_crop) / u_displaySize, vec2(0.0), vec2(1.0));",
-    "  float edgeDistance = min(distanceToEdge.x, distanceToEdge.y);",
-    "  float bandEnd = min(105.0, 62.0 + u_strength * 0.48 + u_thickness * 2.0);",
-    "  float edgeFade = clamp((edgeDistance - 10.0) / (bandEnd - 10.0), 0.0, 1.0);",
-    "  float edgeOpacity = 1.0 - edgeFade * edgeFade * (3.0 - 2.0 * edgeFade);",
-    "  float strengthFade = clamp(u_strength / 6.0, 0.0, 1.0);",
-    "  float strengthOpacity = strengthFade * strengthFade * (3.0 - 2.0 * strengthFade);",
+    "  float coverage = 1.0 - smoothstep(bandEnd - 2.0, bandEnd, edgeDistance);",
     "  vec4 sampled = texture2D(u_image, sourceUv);",
-    "  gl_FragColor = vec4(sampled.rgb, sampled.a * edgeOpacity * strengthOpacity);",
+    "  gl_FragColor = vec4(sampled.rgb, sampled.a * coverage);",
     "}",
   ].join("\n");
 
@@ -279,15 +277,23 @@
   }
 
 
-  // Mirror the WebGL lens mask for the Canvas 2D fallback.
+  // Opaque replacement while warped; fade only after the warp reaches zero.
+  function smoothstep(start, end, value) {
+    const t = Math.max(0, Math.min(1, (value - start) / (end - start)));
+    return t * t * (3 - 2 * t);
+  }
+  function lensBandEnd(strength, edgeThickness) {
+    return Math.min(105, 62 + strength * 0.48 + edgeThickness * 2);
+  }
+  function lensDisplacementWeight(strength, edgeDistance, edgeThickness) {
+    if (strength <= 0) return 0;
+    const end = lensBandEnd(strength, edgeThickness);
+    return 1 - smoothstep(end - 27, end - 3, edgeDistance);
+  }
   function lensOverlayAlpha(strength, edgeDistance, edgeThickness) {
     if (strength <= 0) return 0;
-    const strengthFade = Math.max(0, Math.min(1, strength / 6));
-    const strengthOpacity = strengthFade * strengthFade * (3 - 2 * strengthFade);
-    const bandEnd = Math.min(105, 62 + strength * 0.48 + edgeThickness * 2);
-    const edgeFade = Math.max(0, Math.min(1, (edgeDistance - 10) / (bandEnd - 10)));
-    const edgeOpacity = 1 - edgeFade * edgeFade * (3 - 2 * edgeFade);
-    return edgeOpacity * strengthOpacity;
+    const end = lensBandEnd(strength, edgeThickness);
+    return 1 - smoothstep(end - 2, end, edgeDistance);
   }
 
   function createCanvasRenderer(image) {
@@ -340,8 +346,9 @@
             );
             const alpha = lensOverlayAlpha(strength, edgeDistance, edge);
             if (alpha <= 0) continue;
-            const sx = Math.min(sw - 1, Math.max(0, Math.round((ox + u * g.width + dx) * sw / s.width)));
-            const sy = Math.min(sh - 1, Math.max(0, Math.round((oy + v * g.height + dy) * sh / s.height)));
+            const warp = lensDisplacementWeight(strength, edgeDistance, edge);
+            const sx = Math.min(sw - 1, Math.max(0, Math.round((ox + u * g.width + dx * warp) * sw / s.width)));
+            const sy = Math.min(sh - 1, Math.max(0, Math.round((oy + v * g.height + dy * warp) * sh / s.height)));
             const from = (sy * sw + sx) * 4, to = (y * width + x) * 4;
             out[to] = pixels[from];
             out[to + 1] = pixels[from + 1];

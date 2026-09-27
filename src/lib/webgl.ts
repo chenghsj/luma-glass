@@ -27,30 +27,26 @@ uniform float u_strength;
 uniform float u_thickness;
 
 void main() {
-  // A curved lens samples a broad strip, not just a few edge pixels.
-  // Keep a small center contribution; the direction stays continuous at center.
+  // Replace pixels inside the lens band instead of alpha-blending two
+  // offset copies of background text (the source of the double image).
   vec2 distanceToEdge = min(v_uv, 1.0 - v_uv) * u_glassSize;
+  float edgeDistance = min(distanceToEdge.x, distanceToEdge.y);
+  float bandEnd = min(105.0, 62.0 + u_strength * 0.48 + u_thickness * 2.0);
   float falloff = max(42.0, min(u_glassSize.x, u_glassSize.y) * 0.23)
     + u_thickness * 0.8;
   vec2 influence = mix(vec2(0.07), vec2(1.0), exp(-distanceToEdge / falloff));
   vec2 direction = v_uv * 2.0 - 1.0;
-  vec2 offset = direction * influence * (u_strength * 0.92);
+  // Displacement reaches zero before the two-pixel transparency seam.
+  float warpTaper = 1.0 - smoothstep(bandEnd - 27.0, bandEnd - 3.0, edgeDistance);
+  vec2 offset = direction * influence * (u_strength * 0.92) * warpTaper;
   vec2 point = clamp(
     u_origin + v_uv * u_glassSize + offset,
     vec2(0.0), u_sceneSize
   );
   vec2 sourceUv = clamp((point + u_crop) / u_displaySize, vec2(0.0), vec2(1.0));
-  // Refract a lens band, not the whole image. The original SVG stays visible
-  // at the center, so raster texture sampling cannot soften its text.
-  float edgeDistance = min(distanceToEdge.x, distanceToEdge.y);
-  float bandEnd = min(105.0, 62.0 + u_strength * 0.48 + u_thickness * 2.0);
-  float edgeFade = clamp((edgeDistance - 10.0) / (bandEnd - 10.0), 0.0, 1.0);
-  float edgeOpacity = 1.0 - edgeFade * edgeFade * (3.0 - 2.0 * edgeFade);
-  // At strength 1, reveal only ~7% of the displaced image at the rim.
-  float strengthFade = clamp(u_strength / 6.0, 0.0, 1.0);
-  float strengthOpacity = strengthFade * strengthFade * (3.0 - 2.0 * strengthFade);
+  float coverage = 1.0 - smoothstep(bandEnd - 2.0, bandEnd, edgeDistance);
   vec4 sampled = texture2D(u_image, sourceUv);
-  gl_FragColor = vec4(sampled.rgb, sampled.a * edgeOpacity * strengthOpacity);
+  gl_FragColor = vec4(sampled.rgb, sampled.a * coverage);
 }
 `;
 

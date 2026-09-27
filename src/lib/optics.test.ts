@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clamp, getCoverLayout, lensOverlayAlpha } from "./optics";
+import { clamp, getCoverLayout, lensBandEnd, lensDisplacementWeight, lensOverlayAlpha } from "./optics";
 
 describe("getCoverLayout", () => {
   it("crops wide images horizontally to match background-size cover", () => {
@@ -34,26 +34,32 @@ describe("clamp", () => {
   });
 });
 
-describe("lensOverlayAlpha", () => {
-  it("does not cover the background when refraction is zero", () => {
+describe("lens edge pixel replacement", () => {
+  it("shows the original image at zero refraction", () => {
     expect(lensOverlayAlpha(0, 0, 1.8)).toBe(0);
+    expect(lensDisplacementWeight(0, 0, 1.8)).toBe(0);
   });
 
-  it("fades in instead of abruptly replacing the scene at strength one", () => {
-    const alpha = lensOverlayAlpha(1, 0, 1.8);
-    expect(alpha).toBeGreaterThan(0);
-    expect(alpha).toBeLessThan(0.1);
+  it("replaces refracted pixels at full opacity even at strength one", () => {
+    expect(lensOverlayAlpha(1, 0, 1.8)).toBe(1);
+    expect(lensDisplacementWeight(1, 0, 1.8)).toBe(1);
   });
 
-  it("preserves the sharp original image in the glass center", () => {
+  it("leaves the sharp original visible at the glass center", () => {
     expect(lensOverlayAlpha(60, 140, 1.8)).toBe(0);
-    expect(lensOverlayAlpha(23, 0, 1.8)).toBe(1);
+    expect(lensDisplacementWeight(60, 140, 1.8)).toBe(0);
   });
 
-  it("smoothly feathers the refracted band", () => {
-    const near = lensOverlayAlpha(23, 16, 1.8);
-    const far = lensOverlayAlpha(23, 65, 1.8);
-    expect(near).toBeGreaterThan(far);
-    expect(far).toBeGreaterThan(0);
+  it("stops displacement before any alpha blending can create ghosting", () => {
+    for (const strength of [1, 6, 23, 60]) {
+      for (const thickness of [0.5, 1.8, 6]) {
+        const end = lensBandEnd(strength, thickness);
+        expect(lensDisplacementWeight(strength, end - 3, thickness)).toBe(0);
+        expect(lensOverlayAlpha(strength, end - 3, thickness)).toBe(1);
+        expect(lensDisplacementWeight(strength, end - 1, thickness)).toBe(0);
+        expect(lensOverlayAlpha(strength, end - 1, thickness)).toBeCloseTo(0.5);
+        expect(lensOverlayAlpha(strength, end, thickness)).toBe(0);
+      }
+    }
   });
 });

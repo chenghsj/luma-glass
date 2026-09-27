@@ -31,22 +31,35 @@ export function clamp(value: number, min: number, max: number) {
 }
 
 /**
- * Blend only the optically displaced edge over the original scene. This
- * prevents a low-resolution texture from replacing sharp SVG/DOM text in
- * the glass center when strength changes from 0 to 1.
- *
- * Keep this function in sync with the WebGL fragment shader and docs demo.
+ * Replace the original scene inside the lens band. All displacement reaches
+ * zero before the two-pixel transparency seam starts.
+ * Keep the WebGL shader, Canvas renderer and static demo in sync.
  */
+export function lensBandEnd(strength: number, thickness: number): number {
+  return Math.min(105, 62 + strength * 0.48 + thickness * 2);
+}
+
+function smoothstep(start: number, end: number, value: number): number {
+  const t = clamp((value - start) / (end - start), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+export function lensDisplacementWeight(
+  strength: number,
+  edgeDistance: number,
+  thickness: number,
+): number {
+  if (strength <= 0) return 0;
+  const end = lensBandEnd(strength, thickness);
+  return 1 - smoothstep(end - 27, end - 3, edgeDistance);
+}
+
 export function lensOverlayAlpha(
   strength: number,
   edgeDistance: number,
   thickness: number,
 ): number {
   if (strength <= 0) return 0;
-  const strengthFade = clamp(strength / 6, 0, 1);
-  const strengthOpacity = strengthFade * strengthFade * (3 - 2 * strengthFade);
-  const bandEnd = Math.min(105, 62 + strength * 0.48 + thickness * 2);
-  const edgeFade = clamp((edgeDistance - 10) / (bandEnd - 10), 0, 1);
-  const edgeOpacity = 1 - edgeFade * edgeFade * (3 - 2 * edgeFade);
-  return edgeOpacity * strengthOpacity;
+  const end = lensBandEnd(strength, thickness);
+  return 1 - smoothstep(end - 2, end, edgeDistance);
 }
