@@ -73,3 +73,10 @@ button,input{font:inherit}
 .render-picker select{max-width:205px;padding:9px 27px 9px 11px;border:1px solid #dfe4f0;background:#f6f7fb;border-radius:10px;color:#45516c;font:inherit;cursor:pointer}
 @media(max-width:780px){.controls-bottom{flex-wrap:wrap}.control-actions{flex-wrap:wrap;justify-content:flex-end;width:100%}.render-picker{margin-right:auto}}
 @media(max-width:420px){.render-picker{width:100%;justify-content:space-between}.render-picker select{max-width:70%}}
+
+/* Both LiquidGlass instances inherit opacity, refraction, thickness and renderer
+   from one GlassProvider above their GlassScene. */
+.demo-shared-chip{position:absolute;left:2.5%;top:4%;width:max-content;max-width:45%;min-height:34px}
+.demo-shared-chip .luma-glass__content{display:flex;align-items:center;padding:9px 13px}
+.demo-shared-chip .luma-glass__content>span{font-size:9px;font-weight:800;letter-spacing:1.2px;color:#4d5b81;white-space:nowrap}
+@media(max-width:680px){.demo-shared-chip{left:3%;top:3%;min-height:29px}.demo-shared-chip .luma-glass__content{padding:7px 9px}.demo-shared-chip .luma-glass__content>span{font-size:8px;letter-spacing:.7px}}

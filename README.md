@@ -35,6 +35,46 @@ npm test
 npm run build
 ```
 
+## Global defaults with GlassProvider
+
+Wrap a subtree once to give all of its `LiquidGlass` components the same
+appearance and renderer. Every field is optional, and explicit component props
+take priority over the provider. Without a provider, the existing built-in
+defaults still apply.
+
+```tsx
+import { GlassProvider, GlassScene, LiquidGlass } from "@chenghsj/luma-glass";
+import "@chenghsj/luma-glass/style.css";
+
+export function Example() {
+  return (
+    <GlassProvider
+      defaults={{
+        opacity: 0.4,
+        refraction: 23,
+        thickness: 1.8,
+        radius: 28,
+        renderMode: "canvas",
+      }}
+    >
+      <GlassScene image="/background.jpg" style={{ minHeight: 480 }}>
+        <LiquidGlass>Inherits every global default</LiquidGlass>
+        <LiquidGlass refraction={40}>
+          Inherits the other defaults; overrides only refraction
+        </LiquidGlass>
+      </GlassScene>
+    </GlassProvider>
+  );
+}
+```
+
+You can nest providers for individual sections. A nested provider overrides only
+the fields it defines; other fields inherit from the parent. Changes to provider
+defaults propagate to its descendants, including the selected renderer.
+`onRendererChange` stays per component because each glass has its own renderer.
+For image refraction, glasses still need to live inside a `GlassScene` with a
+same-origin or CORS-enabled image.
+
 ## Use in React
 
 After publishing the package (or installing it from your local checkout):
@@ -54,7 +94,7 @@ export function Hero() {
         refraction={23}
         thickness={1.8}
         radius={32}
-        renderMode="canvas" // Never initializes WebGL
+        renderMode="canvas"
         style={{ position: "absolute", inset: "15% auto auto 10%", padding: 28 }}
       >
         <h1>Liquid Glass</h1>

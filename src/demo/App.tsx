@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GlassScene, LiquidGlass } from "../index";
+import { GlassProvider, GlassScene, LiquidGlass } from "../index";
 import type { ActiveRenderer, RefractionMode } from "../index";
 
 export function App() {
@@ -37,25 +37,31 @@ export function App() {
           </p>
         </div>
 
-        <GlassScene image={`${import.meta.env.BASE_URL}scene.svg`} className="demo-stage">
-          <LiquidGlass
-            className="demo-glass"
-            radius={40}
-            opacity={opacity}
-            refraction={showOriginal ? 0 : refraction}
-            thickness={thickness}
-            renderMode={renderMode}
-            onRendererChange={setActiveRenderer}
-          >
+        <GlassProvider defaults={{
+          opacity,
+          refraction: showOriginal ? 0 : refraction,
+          thickness,
+          radius: 40,
+          renderMode,
+        }}>
+          <GlassScene image={`${import.meta.env.BASE_URL}scene.svg`} className="demo-stage">
+            <LiquidGlass
+              className="demo-glass"
+              onRendererChange={setActiveRenderer}
+            >
             <div className="glass-inner">
               <div className="glass-eyebrow"><span className="glass-star">✳</span> OPTICAL MATERIAL</div>
               <div className="glass-title">Liquid<br /><span>Glass.</span></div>
               <div className="glass-description">Light, depth and refraction.</div>
               <div className="glass-pill">LIVE REFRACTION <span aria-hidden="true">↗</span></div>
             </div>
-          </LiquidGlass>
-          <div className="scene-label">FIXED SHAPE <span>·</span> NO OUTER BLUR</div>
-        </GlassScene>
+            </LiquidGlass>
+            <LiquidGlass className="demo-shared-chip">
+              <span>SHARED DEFAULTS</span>
+            </LiquidGlass>
+            <div className="scene-label">FIXED SHAPE <span>·</span> NO OUTER BLUR</div>
+          </GlassScene>
+        </GlassProvider>
 
         <section className="controls" aria-label="Glass appearance controls">
           <div className="control">

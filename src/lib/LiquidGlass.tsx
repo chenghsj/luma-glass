@@ -8,6 +8,7 @@ import {
   type HTMLAttributes,
 } from "react";
 import { GlassSceneContext } from "./GlassScene";
+import { useGlassDefaults } from "./GlassProvider";
 import { clamp } from "./optics";
 import { createCanvasRefractionRenderer } from "./canvas";
 import {
@@ -36,11 +37,11 @@ export interface LiquidGlassProps extends HTMLAttributes<HTMLDivElement> {
 export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
   function LiquidGlass(
     {
-      opacity = 0.4,
-      refraction = 23,
-      thickness = 1.8,
-      radius = 28,
-      renderMode = "auto",
+      opacity: opacityProp,
+      refraction: refractionProp,
+      thickness: thicknessProp,
+      radius: radiusProp,
+      renderMode: renderModeProp,
       onRendererChange,
       className,
       style,
@@ -50,6 +51,13 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
     forwardedRef,
   ) {
     const scene = useContext(GlassSceneContext);
+    const defaults = useGlassDefaults();
+    // Explicit component props always win over provider and built-in defaults.
+    const opacity = opacityProp ?? defaults.opacity;
+    const refraction = refractionProp ?? defaults.refraction;
+    const thickness = thicknessProp ?? defaults.thickness;
+    const radius = radiusProp ?? defaults.radius;
+    const renderMode = renderModeProp ?? defaults.renderMode;
     const rootRef = useRef<HTMLDivElement | null>(null);
     const webglCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const cpuCanvasRef = useRef<HTMLCanvasElement | null>(null);
