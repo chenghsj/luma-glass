@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { GlassProvider, GlassScene, LiquidGlass } from "../index";
 import type { ActiveRenderer, RefractionMode } from "../index";
 
@@ -22,9 +22,9 @@ export function App() {
     if (!event.isPrimary || event.button !== 0) return;
     if (event.target instanceof Element &&
         event.target.closest("a, button, input, select, textarea, [data-no-drag]")) return;
-    const glass = event.currentTarget;
-    const scene = glass.parentElement;
-    if (!scene) return;
+    const glass = glassRef.current;
+    const scene = glass?.parentElement;
+    if (!glass || !scene) return;
     const sceneRect = scene.getBoundingClientRect();
     const glassRect = glass.getBoundingClientRect();
     dragRef.current = {
@@ -34,20 +34,21 @@ export function App() {
       left: glassRect.left - sceneRect.left,
       top: glassRect.top - sceneRect.top,
     };
+    event.preventDefault();
     glass.setPointerCapture(event.pointerId);
     glass.classList.add("is-dragging");
   };
 
-  const onGlassPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const onGlassPointerMove = (event: PointerEvent) => {
     const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    const glass = event.currentTarget;
+    const glass = glassRef.current;
+    if (!drag || !glass || drag.pointerId !== event.pointerId) return;
     const scene = glass.parentElement;
     if (!scene) return;
+    if (event.cancelable) event.preventDefault();
     const sceneRect = scene.getBoundingClientRect();
     const glassRect = glass.getBoundingClientRect();
-    // Allow the glass edge to reach every part of the background. Keep a
-    // visible grip inside the scene so the card cannot become unrecoverable.
+    // The glass may extend beyond the scene, but always leave a grab area.
     const visibleX = Math.min(72, glassRect.width, sceneRect.width);
     const visibleY = Math.min(72, glassRect.height, sceneRect.height);
     const left = Math.max(visibleX - glassRect.width, Math.min(
@@ -58,20 +59,32 @@ export function App() {
       sceneRect.height - visibleY,
       drag.top + event.clientY - drag.startY,
     ));
-    // Percentages preserve the card's position when the demo is resized.
     glass.style.left = `${(left / sceneRect.width) * 100}%`;
     glass.style.top = `${(top / sceneRect.height) * 100}%`;
   };
 
-  const onGlassPointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const onGlassPointerEnd = (event: PointerEvent | ReactPointerEvent<HTMLDivElement>) => {
     if (dragRef.current?.pointerId !== event.pointerId) return;
     dragRef.current = null;
-    const glass = event.currentTarget;
-    glass.classList.remove("is-dragging");
-    if (glass.hasPointerCapture(event.pointerId)) {
+    const glass = glassRef.current;
+    glass?.classList.remove("is-dragging");
+    if (glass?.hasPointerCapture(event.pointerId)) {
       glass.releasePointerCapture(event.pointerId);
     }
   };
+
+  // Listen on window rather than relying on the moving card remaining under
+  // the pointer. This also keeps vertical touch drags from scrolling the page.
+  useEffect(() => {
+    window.addEventListener("pointermove", onGlassPointerMove, { passive: false });
+    window.addEventListener("pointerup", onGlassPointerEnd);
+    window.addEventListener("pointercancel", onGlassPointerEnd);
+    return () => {
+      window.removeEventListener("pointermove", onGlassPointerMove);
+      window.removeEventListener("pointerup", onGlassPointerEnd);
+      window.removeEventListener("pointercancel", onGlassPointerEnd);
+    };
+  }, []);
 
   return (
     <div className="page">
@@ -113,7 +126,6 @@ export function App() {
               ref={glassRef}
               title="Drag to move the glass card"
               onPointerDown={onGlassPointerDown}
-              onPointerMove={onGlassPointerMove}
               onPointerUp={onGlassPointerEnd}
               onPointerCancel={onGlassPointerEnd}
               onLostPointerCapture={onGlassPointerEnd}
@@ -129,7 +141,7 @@ export function App() {
             <LiquidGlass className="demo-shared-chip">
               <span>SHARED DEFAULTS</span>
             </LiquidGlass>
-            <div className="scene-label">DRAG ACROSS SCENE <span>·</span> NO OUTER BLUR</div>
+            <div className="scene-label">DRAG ↕ ↔ <span>·</span> NO OUTER BLUR</div>
           </GlassScene>
         </GlassProvider>
 
@@ -190,6 +202,8 @@ export function App() {
                 setRefraction(23);
                 setThickness(1.8);
                 setShowOriginal(false);
+                dragRef.current = null;
+                glassRef.current?.classList.remove("is-dragging");
                 glassRef.current?.style.removeProperty("left");
                 glassRef.current?.style.removeProperty("top");
               }}>↺ &nbsp; Reset</button>

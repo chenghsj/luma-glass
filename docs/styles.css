@@ -21,6 +21,7 @@ button,input{font:inherit}
 .heading p{font-size:14px;line-height:1.6;color:#72809b;margin:0 auto;max-width:530px}
 .demo-stage{width:100%;aspect-ratio:760/470;max-height:590px;border-radius:21px;box-shadow:0 12px 42px #565a8b17}
 .demo-glass{position:absolute;left:16.6%;top:17.6%;width:63.5%;height:65.1%;cursor:grab;touch-action:none}
+.demo-stage > .demo-glass,.demo-stage > .demo-shared-chip{position:absolute}
 .demo-glass.is-dragging{cursor:grabbing;z-index:2}
 .demo-glass .glass-inner{-webkit-user-select:none;user-select:none}
 .glass-inner{height:100%;padding:clamp(18px,3.7vw,41px);display:flex;flex-direction:column;align-items:flex-start;color:#33415f}
