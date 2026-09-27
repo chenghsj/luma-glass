@@ -178,9 +178,21 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    // SVG Image objects are not reliable WebGL texture inputs in Chrome.
+    // Draw the image to Canvas 2D once and upload the rasterized pixels.
+    const bitmap = document.createElement("canvas");
+    bitmap.width = image.naturalWidth;
+    bitmap.height = image.naturalHeight;
+    if (!bitmap.width || !bitmap.height) throw new Error("Image has no dimensions");
+    const bitmapCtx = bitmap.getContext("2d");
+    if (!bitmapCtx) throw new Error("Unable to rasterize image for WebGL");
+    bitmapCtx.drawImage(image, 0, 0, bitmap.width, bitmap.height);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-    if (gl.getError() !== gl.NO_ERROR) throw new Error("Could not upload background texture");
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
+    const textureError = gl.getError();
+    if (textureError !== gl.NO_ERROR) {
+      throw new Error("Canvas-backed WebGL texture upload failed: 0x" + textureError.toString(16));
+    }
 
     const position = gl.getAttribLocation(program, "a_position");
     if (position < 0) throw new Error("Missing shader position attribute");

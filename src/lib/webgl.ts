@@ -11,7 +11,7 @@ void main() {
 `;
 
 /*
- * The source image is uploaded without UNPACK_FLIP_Y_WEBGL.
+ * The rasterized image is uploaded without UNPACK_FLIP_Y_WEBGL.
  * Texture v=0 therefore addresses the image's original top row.
  */
 const fragmentShader = `
@@ -115,10 +115,26 @@ export function createRefractionRenderer(
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  // HTMLImageElement backed by SVG can fail texImage2D in Chrome even when
+  // the image renders in CSS and Canvas 2D. Rasterize first, then upload pixels.
+  const bitmap = document.createElement("canvas");
+  bitmap.width = image.naturalWidth;
+  bitmap.height = image.naturalHeight;
+  if (!bitmap.width || !bitmap.height) {
+    throw new Error("Background image has no intrinsic dimensions.");
+  }
+  const bitmapContext = bitmap.getContext("2d");
+  if (!bitmapContext) throw new Error("Cannot rasterize background image.");
+  bitmapContext.drawImage(image, 0, 0, bitmap.width, bitmap.height);
+
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-  if (gl.getError() !== gl.NO_ERROR) {
-    throw new Error("Background image cannot be uploaded as a WebGL texture.");
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
+  const textureError = gl.getError();
+  if (textureError !== gl.NO_ERROR) {
+    throw new Error(
+      "Canvas-backed background texture upload failed (WebGL error 0x" +
+        textureError.toString(16) + ").",
+    );
   }
 
   const position = gl.getAttribLocation(program, "a_position");
