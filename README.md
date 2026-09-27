@@ -39,13 +39,57 @@ npm install
 npm run dev
 ```
 
-Open the local Vite URL printed in your terminal. The playground includes live sliders for surface opacity, border opacity, refraction, and edge thickness, plus a dark/light glass preview. To check the package:
+Open the local Vite URL printed in your terminal. The playground includes a variant selector, live sliders for surface opacity, border opacity, refraction, and edge thickness, plus a dark/light glass preview. To check the package:
 
 ```bash
 npm run typecheck
 npm test
 npm run build
 ```
+
+## Variants and className
+
+Use `variant` for optical presets and `className` for layout or custom CSS.
+`default` preserves the existing 10% surface opacity, 15% border opacity and
+23px refraction. `subtle` uses 6% / 8% / 12px; `pronounced` uses
+16% / 25% / 38px. All three leave `thickness`, `radius`, `tone` and
+`renderMode` unchanged.
+
+```tsx
+<GlassProvider defaults={{ variant: "subtle", tone: "dark" }}>
+  <GlassScene image="/background.jpg">
+    <LiquidGlass className="my-glass">Inherited subtle variant</LiquidGlass>
+    <LiquidGlass variant="pronounced" opacity={0.1} borderOpacity={0.15}>
+      Pronounced refraction with individually overridden opacity
+    </LiquidGlass>
+  </GlassScene>
+</GlassProvider>
+```
+
+Component props win over an explicit component variant, which wins over
+inherited provider values. A provider's individually specified settings win
+over its variant. Nested providers inherit all unspecified settings.
+
+CSS classes can override the active variables for values not specified as
+component props; use a selector such as `.luma-glass.my-glass`:
+
+```css
+.luma-glass.my-glass {
+  width: 320px;
+  padding: 24px;
+  --luma-opacity: 0.12;
+  --luma-border-opacity: 0.2;
+  --luma-radius: 36px;
+  --luma-thickness: 1px;
+}
+```
+
+The CSS radius and thickness are also used by the refraction renderer, keeping
+the lens aligned with the silhouette. An explicit `opacity`,
+`borderOpacity`, `radius` or `thickness` prop wins over a CSS class.
+For refraction strength, use the `refraction` prop or a variant rather than a
+CSS variable. An explicitly supplied `style` value has React's usual
+last-write precedence.
 
 ## Global defaults with GlassProvider
 
@@ -62,6 +106,7 @@ export function Example() {
   return (
     <GlassProvider
       defaults={{
+        variant: "default",
         opacity: 0.1,
         borderOpacity: 0.15,
         tone: "light",
@@ -125,6 +170,8 @@ export function Hero() {
 
 | Prop | Type | Default | Range |
 | --- | --- | --- | --- |
+| `variant` | `"default" \| "subtle" \| "pronounced"` | `"default"` | Optical preset; does not change shape or renderer |
+| `className` | string | — | Custom CSS, layout and class-overridable variables |
 | `opacity` | number | `0.1` | 0–1, glass surface |
 | `borderOpacity` | number | `0.15` | 0–1, optical rim and highlights (independent of surface) |
 | `tone` | `"light" \| "dark"` | `"light"` | Controls surface tint; does not change the glass silhouette |
