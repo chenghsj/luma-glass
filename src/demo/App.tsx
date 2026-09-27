@@ -46,12 +46,16 @@ export function App() {
     if (!scene) return;
     const sceneRect = scene.getBoundingClientRect();
     const glassRect = glass.getBoundingClientRect();
-    const left = Math.max(0, Math.min(
-      sceneRect.width - glassRect.width,
+    // Allow the glass edge to reach every part of the background. Keep a
+    // visible grip inside the scene so the card cannot become unrecoverable.
+    const visibleX = Math.min(72, glassRect.width, sceneRect.width);
+    const visibleY = Math.min(72, glassRect.height, sceneRect.height);
+    const left = Math.max(visibleX - glassRect.width, Math.min(
+      sceneRect.width - visibleX,
       drag.left + event.clientX - drag.startX,
     ));
-    const top = Math.max(0, Math.min(
-      sceneRect.height - glassRect.height,
+    const top = Math.max(visibleY - glassRect.height, Math.min(
+      sceneRect.height - visibleY,
       drag.top + event.clientY - drag.startY,
     ));
     // Percentages preserve the card's position when the demo is resized.
@@ -125,7 +129,7 @@ export function App() {
             <LiquidGlass className="demo-shared-chip">
               <span>SHARED DEFAULTS</span>
             </LiquidGlass>
-            <div className="scene-label">DRAG THE CARD <span>·</span> NO OUTER BLUR</div>
+            <div className="scene-label">DRAG ACROSS SCENE <span>·</span> NO OUTER BLUR</div>
           </GlassScene>
         </GlassProvider>
 
@@ -193,8 +197,9 @@ export function App() {
           </div>
         </section>
         <p className="footnote">
-          The sample background is an SVG image. Refraction applies to this image,
-          not arbitrary DOM elements. Use a same-origin or CORS-enabled image in your own scene.
+          Drag the glass across the entire SVG background, even partly past its edges.
+          Refraction samples the scene image, not arbitrary DOM beneath it. Use a same-origin
+          or CORS-enabled image in your own scene.
         </p>
       </main>
     </div>
