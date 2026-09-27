@@ -1,5 +1,7 @@
 # Luma Glass
 
+**[▶ Live Demo — Open the playground](https://chenghsj.github.io/luma-glass/)** · [React usage](#use-in-react) · [Tailwind & CVA](#tailwind-and-consumer-defined-variants)
+
 A small React + TypeScript library for fixed-shape optical glass. Adjust the milky surface, real image refraction, and asymmetric edge thickness without blurring the outside of the element.
 
 **Status:** first working prototype. `GlassScene` image backgrounds can be refracted with WebGL or CPU Canvas 2D. CSS handles the fixed silhouette and optical edge. Arbitrary DOM behind the glass is not sampled. The package is not published to npm yet.
