@@ -42,7 +42,7 @@ function OpticalStar() {
 }
 function App() {
     const [opacity, setOpacity] = (0, react_1.useState)(0.1);
-    const [borderOpacity, setBorderOpacity] = (0, react_1.useState)(0.38);
+    const [borderOpacity, setBorderOpacity] = (0, react_1.useState)(0.15);
     const [tone, setTone] = (0, react_1.useState)("dark");
     const [refraction, setRefraction] = (0, react_1.useState)(23);
     const [showOriginal, setShowOriginal] = (0, react_1.useState)(false);
@@ -126,7 +126,7 @@ function App() {
                                             setShowOriginal(false);
                                         } }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "None" }), (0, jsx_runtime_1.jsx)("span", { children: "Strong" })] }), (0, jsx_runtime_1.jsx)("p", { className: "control-hint", children: "Compare the Lower Layer card border behind the glass." })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "thickness", children: "Optical edge thickness" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "thickness", children: [thickness.toFixed(1), " px"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "thickness", type: "range", min: "0.5", max: "6", step: "0.1", value: thickness, onChange: (event) => setThickness(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Thin" }), (0, jsx_runtime_1.jsx)("span", { children: "Thick" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "border-opacity", children: "Border opacity" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "border-opacity", children: [Math.round(borderOpacity * 100), "%"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "border-opacity", type: "range", min: "0", max: "1", step: "0.01", value: borderOpacity, onChange: (event) => setBorderOpacity(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Subtle" }), (0, jsx_runtime_1.jsx)("span", { children: "Bright" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "controls-bottom", children: [(0, jsx_runtime_1.jsxs)("span", { className: "status", children: [(0, jsx_runtime_1.jsx)("i", {}), " ", showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"] }), (0, jsx_runtime_1.jsxs)("div", { className: "control-actions", children: [(0, jsx_runtime_1.jsxs)("label", { className: "render-picker tone-picker", htmlFor: "glass-tone", children: ["Glass tone", (0, jsx_runtime_1.jsxs)("select", { id: "glass-tone", value: tone, onChange: (event) => setTone(event.target.value), children: [(0, jsx_runtime_1.jsx)("option", { value: "dark", children: "Dark" }), (0, jsx_runtime_1.jsx)("option", { value: "light", children: "Light" })] })] }), (0, jsx_runtime_1.jsxs)("label", { className: "render-picker", htmlFor: "render-mode", children: ["Renderer", (0, jsx_runtime_1.jsxs)("select", { id: "render-mode", value: renderMode, onChange: (event) => setRenderMode(event.target.value), children: [(0, jsx_runtime_1.jsx)("option", { value: "canvas", children: "Canvas 2D \u00B7 no WebGL" }), (0, jsx_runtime_1.jsx)("option", { value: "auto", children: "Auto \u00B7 WebGL \u2192 Canvas" }), (0, jsx_runtime_1.jsx)("option", { value: "webgl", children: "WebGL \u00B7 Canvas fallback" })] })] }), (0, jsx_runtime_1.jsx)("button", { type: "button", "aria-pressed": showOriginal, onClick: () => setShowOriginal((value) => !value), children: showOriginal ? "Show refraction" : "Show original" }), (0, jsx_runtime_1.jsx)("button", { type: "button", onClick: () => {
                                                     setOpacity(0.1);
-                                                    setBorderOpacity(0.38);
+                                                    setBorderOpacity(0.15);
                                                     setTone("dark");
                                                     setRefraction(23);
                                                     setThickness(0.5);
@@ -163,7 +163,7 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const builtInDefaults = {
     opacity: 0.1,
-    borderOpacity: 0.42,
+    borderOpacity: 0.15,
     tone: "light",
     refraction: 23,
     thickness: 0.5,
