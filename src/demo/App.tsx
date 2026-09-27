@@ -25,7 +25,7 @@ export function App() {
   const [refraction, setRefraction] = useState(23);
   const [showOriginal, setShowOriginal] = useState(false);
   const [thickness, setThickness] = useState(0.5);
-  const [renderMode, setRenderMode] = useState<RefractionMode>("canvas");
+  const [renderMode, setRenderMode] = useState<RefractionMode>("auto");
   const [activeRenderer, setActiveRenderer] = useState<ActiveRenderer>("none");
   const glassRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
@@ -223,9 +223,9 @@ export function App() {
               <label className="render-picker" htmlFor="render-mode">
                 Renderer
                 <select id="render-mode" value={renderMode} onChange={(event) => setRenderMode(event.target.value as RefractionMode)}>
-                  <option value="canvas">Canvas 2D · no WebGL</option>
                   <option value="auto">Auto · WebGL → Canvas</option>
                   <option value="webgl">WebGL · Canvas fallback</option>
+                  <option value="canvas">Canvas 2D · no WebGL</option>
                 </select>
               </label>
               <button type="button" aria-pressed={showOriginal} onClick={() => setShowOriginal((value) => !value)}>
@@ -237,6 +237,7 @@ export function App() {
                 setTone("dark");
                 setRefraction(23);
                 setThickness(0.5);
+                setRenderMode("auto");
                 setShowOriginal(false);
                 dragRef.current = null;
                 glassRef.current?.classList.remove("is-dragging");
