@@ -41,7 +41,9 @@ function OpticalStar() {
     return (0, jsx_runtime_1.jsx)("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.65, strokeLinecap: "round", "aria-hidden": "true", focusable: "false", children: (0, jsx_runtime_1.jsx)("path", { d: "M12 2.75v18.5M2.75 12h18.5M5.46 5.46l13.08 13.08M18.54 5.46 5.46 18.54" }) });
 }
 function App() {
-    const [opacity, setOpacity] = (0, react_1.useState)(0.4);
+    const [opacity, setOpacity] = (0, react_1.useState)(0.6);
+    const [borderOpacity, setBorderOpacity] = (0, react_1.useState)(0.38);
+    const [tone, setTone] = (0, react_1.useState)("dark");
     const [refraction, setRefraction] = (0, react_1.useState)(23);
     const [showOriginal, setShowOriginal] = (0, react_1.useState)(false);
     const [thickness, setThickness] = (0, react_1.useState)(0.5);
@@ -113,15 +115,19 @@ function App() {
 
     return ((0, jsx_runtime_1.jsxs)("div", { className: "page", children: [(0, jsx_runtime_1.jsxs)("header", { className: "topbar", children: [(0, jsx_runtime_1.jsxs)("a", { className: "brand", href: "#", "aria-label": "Luma Glass home", children: [(0, jsx_runtime_1.jsx)("span", { className: "brand-symbol", "aria-hidden": "true", children: (0, jsx_runtime_1.jsx)(OpticalStar, {}) }), (0, jsx_runtime_1.jsx)("span", { children: "LUMA GLASS" })] }), (0, jsx_runtime_1.jsxs)("a", { className: "github-link", href: "https://github.com/chenghsj/luma-glass", target: "_blank", rel: "noreferrer", children: ["GitHub ", (0, jsx_runtime_1.jsx)("span", { "aria-hidden": "true", children: "\u2197" })] })] }), (0, jsx_runtime_1.jsxs)("main", { className: "main", children: [(0, jsx_runtime_1.jsxs)("div", { className: "heading", children: [(0, jsx_runtime_1.jsx)("span", { className: "eyebrow", children: "OPEN SOURCE \u00B7 REACT + TYPESCRIPT" }), (0, jsx_runtime_1.jsx)("h1", { children: "Light becomes an interface." }), (0, jsx_runtime_1.jsx)("p", { children: "A crisp, fixed glass silhouette with adjustable refraction, translucency, and optical edge thickness." })] }), (0, jsx_runtime_1.jsx)(index_1.GlassProvider, { defaults: {
                             opacity,
+                            borderOpacity,
+                            tone,
                             refraction: showOriginal ? 0 : refraction,
                             thickness,
                             radius: 40,
                             renderMode,
-                        }, children: (0, jsx_runtime_1.jsxs)(index_1.GlassScene, { image: `${"/luma-glass/"}scene.svg`, className: "demo-stage", children: [(0, jsx_runtime_1.jsx)(index_1.LiquidGlass, { className: "demo-glass", ref: glassRef, title: "Drag to move the glass card", onPointerDown: onGlassPointerDown, onPointerUp: onGlassPointerEnd, onPointerCancel: onGlassPointerEnd, onLostPointerCapture: onGlassPointerEnd, onRendererChange: setActiveRenderer, children: (0, jsx_runtime_1.jsxs)("div", { className: "glass-inner", children: [(0, jsx_runtime_1.jsxs)("div", { className: "glass-eyebrow", children: [(0, jsx_runtime_1.jsx)("span", { className: "glass-star", "aria-hidden": "true", children: (0, jsx_runtime_1.jsx)(OpticalStar, {}) }), " OPTICAL MATERIAL"] }), (0, jsx_runtime_1.jsxs)("div", { className: "glass-title", children: ["Liquid", (0, jsx_runtime_1.jsx)("br", {}), (0, jsx_runtime_1.jsx)("span", { children: "Glass." })] }), (0, jsx_runtime_1.jsx)("div", { className: "glass-description", children: "Light, depth and refraction." }), (0, jsx_runtime_1.jsxs)("div", { className: "glass-pill", children: ["LIVE REFRACTION ", (0, jsx_runtime_1.jsx)("span", { "aria-hidden": "true", children: "\u2197" })] })] }) })] }) }), (0, jsx_runtime_1.jsx)("p", { className: "demo-drag-hint", children: "Drag the glass to explore refraction." }), (0, jsx_runtime_1.jsxs)("section", { className: "controls", "aria-label": "Glass appearance controls", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "opacity", children: "Glass opacity" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "opacity", children: [Math.round(opacity * 100), "%"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "opacity", type: "range", min: "0", max: "0.75", step: "0.01", value: opacity, onChange: (event) => setOpacity(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Clear" }), (0, jsx_runtime_1.jsx)("span", { children: "Milky" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "refraction", children: "Refraction" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "refraction", children: [refraction, " / 60"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "refraction", type: "range", min: "0", max: "60", step: "1", value: refraction, onChange: (event) => {
+                        }, children: (0, jsx_runtime_1.jsxs)(index_1.GlassScene, { image: `${"/luma-glass/"}scene.svg`, className: "demo-stage", children: [(0, jsx_runtime_1.jsx)(index_1.LiquidGlass, { className: "demo-glass", ref: glassRef, title: "Drag to move the glass card", onPointerDown: onGlassPointerDown, onPointerUp: onGlassPointerEnd, onPointerCancel: onGlassPointerEnd, onLostPointerCapture: onGlassPointerEnd, onRendererChange: setActiveRenderer, children: (0, jsx_runtime_1.jsxs)("div", { className: "glass-inner", children: [(0, jsx_runtime_1.jsxs)("div", { className: "glass-eyebrow", children: [(0, jsx_runtime_1.jsx)("span", { className: "glass-star", "aria-hidden": "true", children: (0, jsx_runtime_1.jsx)(OpticalStar, {}) }), " OPTICAL MATERIAL"] }), (0, jsx_runtime_1.jsxs)("div", { className: "glass-title", children: ["Liquid", (0, jsx_runtime_1.jsx)("br", {}), (0, jsx_runtime_1.jsx)("span", { children: "Glass." })] }), (0, jsx_runtime_1.jsx)("div", { className: "glass-description", children: "Light, depth and refraction." }), (0, jsx_runtime_1.jsxs)("div", { className: "glass-pill", children: ["LIVE REFRACTION ", (0, jsx_runtime_1.jsx)("span", { "aria-hidden": "true", children: "\u2197" })] })] }) })] }) }), (0, jsx_runtime_1.jsx)("p", { className: "demo-drag-hint", children: "Drag the glass to explore refraction." }), (0, jsx_runtime_1.jsxs)("section", { className: "controls", "aria-label": "Glass appearance controls", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "opacity", children: "Surface opacity" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "opacity", children: [Math.round(opacity * 100), "%"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "opacity", type: "range", min: "0", max: "0.75", step: "0.01", value: opacity, onChange: (event) => setOpacity(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Clear" }), (0, jsx_runtime_1.jsx)("span", { children: "Milky" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "refraction", children: "Refraction" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "refraction", children: [refraction, " / 60"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "refraction", type: "range", min: "0", max: "60", step: "1", value: refraction, onChange: (event) => {
                                             setRefraction(Number(event.target.value));
                                             setShowOriginal(false);
-                                        } }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "None" }), (0, jsx_runtime_1.jsx)("span", { children: "Strong" })] }), (0, jsx_runtime_1.jsx)("p", { className: "control-hint", children: "Compare the Lower Layer card border behind the glass." })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "thickness", children: "Optical edge thickness" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "thickness", children: [thickness.toFixed(1), " px"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "thickness", type: "range", min: "0.5", max: "6", step: "0.1", value: thickness, onChange: (event) => setThickness(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Thin" }), (0, jsx_runtime_1.jsx)("span", { children: "Thick" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "controls-bottom", children: [(0, jsx_runtime_1.jsxs)("span", { className: "status", children: [(0, jsx_runtime_1.jsx)("i", {}), " ", showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"] }), (0, jsx_runtime_1.jsxs)("div", { className: "control-actions", children: [(0, jsx_runtime_1.jsxs)("label", { className: "render-picker", htmlFor: "render-mode", children: ["Renderer", (0, jsx_runtime_1.jsxs)("select", { id: "render-mode", value: renderMode, onChange: (event) => setRenderMode(event.target.value), children: [(0, jsx_runtime_1.jsx)("option", { value: "canvas", children: "Canvas 2D \u00B7 no WebGL" }), (0, jsx_runtime_1.jsx)("option", { value: "auto", children: "Auto \u00B7 WebGL \u2192 Canvas" }), (0, jsx_runtime_1.jsx)("option", { value: "webgl", children: "WebGL \u00B7 Canvas fallback" })] })] }), (0, jsx_runtime_1.jsx)("button", { type: "button", "aria-pressed": showOriginal, onClick: () => setShowOriginal((value) => !value), children: showOriginal ? "Show refraction" : "Show original" }), (0, jsx_runtime_1.jsx)("button", { type: "button", onClick: () => {
-                                                    setOpacity(0.4);
+                                        } }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "None" }), (0, jsx_runtime_1.jsx)("span", { children: "Strong" })] }), (0, jsx_runtime_1.jsx)("p", { className: "control-hint", children: "Compare the Lower Layer card border behind the glass." })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "thickness", children: "Optical edge thickness" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "thickness", children: [thickness.toFixed(1), " px"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "thickness", type: "range", min: "0.5", max: "6", step: "0.1", value: thickness, onChange: (event) => setThickness(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Thin" }), (0, jsx_runtime_1.jsx)("span", { children: "Thick" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "border-opacity", children: "Border opacity" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "border-opacity", children: [Math.round(borderOpacity * 100), "%"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "border-opacity", type: "range", min: "0", max: "1", step: "0.01", value: borderOpacity, onChange: (event) => setBorderOpacity(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Subtle" }), (0, jsx_runtime_1.jsx)("span", { children: "Bright" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "controls-bottom", children: [(0, jsx_runtime_1.jsxs)("span", { className: "status", children: [(0, jsx_runtime_1.jsx)("i", {}), " ", showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"] }), (0, jsx_runtime_1.jsxs)("div", { className: "control-actions", children: [(0, jsx_runtime_1.jsxs)("label", { className: "render-picker tone-picker", htmlFor: "glass-tone", children: ["Glass tone", (0, jsx_runtime_1.jsxs)("select", { id: "glass-tone", value: tone, onChange: (event) => setTone(event.target.value), children: [(0, jsx_runtime_1.jsx)("option", { value: "dark", children: "Dark" }), (0, jsx_runtime_1.jsx)("option", { value: "light", children: "Light" })] })] }), (0, jsx_runtime_1.jsxs)("label", { className: "render-picker", htmlFor: "render-mode", children: ["Renderer", (0, jsx_runtime_1.jsxs)("select", { id: "render-mode", value: renderMode, onChange: (event) => setRenderMode(event.target.value), children: [(0, jsx_runtime_1.jsx)("option", { value: "canvas", children: "Canvas 2D \u00B7 no WebGL" }), (0, jsx_runtime_1.jsx)("option", { value: "auto", children: "Auto \u00B7 WebGL \u2192 Canvas" }), (0, jsx_runtime_1.jsx)("option", { value: "webgl", children: "WebGL \u00B7 Canvas fallback" })] })] }), (0, jsx_runtime_1.jsx)("button", { type: "button", "aria-pressed": showOriginal, onClick: () => setShowOriginal((value) => !value), children: showOriginal ? "Show refraction" : "Show original" }), (0, jsx_runtime_1.jsx)("button", { type: "button", onClick: () => {
+                                                    setOpacity(0.6);
+                                                    setBorderOpacity(0.38);
+                                                    setTone("dark");
                                                     setRefraction(23);
                                                     setThickness(0.5);
                                                     setShowOriginal(false);
@@ -157,6 +163,8 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const builtInDefaults = {
     opacity: 0.4,
+    borderOpacity: 0.42,
+    tone: "light",
     refraction: 23,
     thickness: 0.5,
     radius: 28,
@@ -165,14 +173,16 @@ const builtInDefaults = {
 const GlassDefaultsContext = (0, react_1.createContext)(builtInDefaults);
 function GlassProvider({ defaults = {}, children }) {
     const parent = (0, react_1.useContext)(GlassDefaultsContext);
-    const { opacity, refraction, thickness, radius, renderMode } = defaults;
+    const { opacity, borderOpacity, tone, refraction, thickness, radius, renderMode } = defaults;
     const value = (0, react_1.useMemo)(() => ({
         opacity: opacity ?? parent.opacity,
+        borderOpacity: borderOpacity ?? parent.borderOpacity,
+        tone: tone ?? parent.tone,
         refraction: refraction ?? parent.refraction,
         thickness: thickness ?? parent.thickness,
         radius: radius ?? parent.radius,
         renderMode: renderMode ?? parent.renderMode,
-    }), [parent, opacity, refraction, thickness, radius, renderMode]);
+    }), [parent, opacity, borderOpacity, tone, refraction, thickness, radius, renderMode]);
     return ((0, jsx_runtime_1.jsx)(GlassDefaultsContext.Provider, { value: value, children: children }));
 }
 function useGlassDefaults() {
@@ -237,10 +247,12 @@ const GlassProvider_1 = require("./GlassProvider");
 const optics_1 = require("./optics");
 const canvas_1 = require("./canvas");
 const webgl_1 = require("./webgl");
-exports.LiquidGlass = (0, react_1.forwardRef)(function LiquidGlass({ opacity: opacityProp, refraction: refractionProp, thickness: thicknessProp, radius: radiusProp, renderMode: renderModeProp, onRendererChange, className, style, children, ...rest }, forwardedRef) {
+exports.LiquidGlass = (0, react_1.forwardRef)(function LiquidGlass({ opacity: opacityProp, borderOpacity: borderOpacityProp, tone: toneProp, refraction: refractionProp, thickness: thicknessProp, radius: radiusProp, renderMode: renderModeProp, onRendererChange, className, style, children, ...rest }, forwardedRef) {
     const scene = (0, react_1.useContext)(GlassScene_1.GlassSceneContext);
     const defaults = (0, GlassProvider_1.useGlassDefaults)();
     const opacity = opacityProp ?? defaults.opacity;
+    const borderOpacity = borderOpacityProp ?? defaults.borderOpacity;
+    const tone = toneProp ?? defaults.tone;
     const refraction = refractionProp ?? defaults.refraction;
     const thickness = thicknessProp ?? defaults.thickness;
     const radius = radiusProp ?? defaults.radius;
@@ -250,8 +262,8 @@ exports.LiquidGlass = (0, react_1.forwardRef)(function LiquidGlass({ opacity: op
     const cpuCanvasRef = (0, react_1.useRef)(null);
     const rendererRef = (0, react_1.useRef)(null);
     const redrawRef = (0, react_1.useRef)(null);
-    const opticalValues = (0, react_1.useRef)({ refraction, thickness });
-    opticalValues.current = { refraction, thickness };
+    const opticalValues = (0, react_1.useRef)({ refraction, thickness, radius });
+    opticalValues.current = { refraction, thickness, radius };
     const onChangeRef = (0, react_1.useRef)(onRendererChange);
     onChangeRef.current = onRendererChange;
     const setRootRef = (0, react_1.useCallback)((element) => {
@@ -312,6 +324,7 @@ exports.LiquidGlass = (0, react_1.forwardRef)(function LiquidGlass({ opacity: op
                 glass: root.getBoundingClientRect(),
                 strength: (0, optics_1.clamp)(values.refraction, 0, 60),
                 thickness: (0, optics_1.clamp)(values.thickness, 0.5, 6),
+                radius: Math.max(0, values.radius),
             };
             try {
                 currentRenderer.draw(frame);
@@ -368,13 +381,14 @@ exports.LiquidGlass = (0, react_1.forwardRef)(function LiquidGlass({ opacity: op
     }, [scene?.imageElement, scene?.sceneRef, renderMode]);
     (0, react_1.useEffect)(() => {
         redrawRef.current?.();
-    }, [refraction, thickness, scene?.imageElement, renderMode]);
+    }, [refraction, thickness, radius, scene?.imageElement, renderMode]);
     const variables = {
         "--luma-opacity": (0, optics_1.clamp)(opacity, 0, 1),
+        "--luma-border-opacity": (0, optics_1.clamp)(borderOpacity, 0, 1),
         "--luma-thickness": (0, optics_1.clamp)(thickness, 0.5, 6) + "px",
         "--luma-radius": Math.max(0, radius) + "px",
     };
-    return ((0, jsx_runtime_1.jsxs)("div", { ...rest, ref: setRootRef, className: ["luma-glass", className].filter(Boolean).join(" "), style: { ...variables, ...style }, children: [(0, jsx_runtime_1.jsx)("canvas", { ref: webglCanvasRef, className: "luma-glass__refraction", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("canvas", { ref: cpuCanvasRef, className: "luma-glass__refraction", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("span", { className: "luma-glass__surface", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("span", { className: "luma-glass__shell", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("span", { className: "luma-glass__contact", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("span", { className: "luma-glass__highlight", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("div", { className: "luma-glass__content", children: children })] }));
+    return ((0, jsx_runtime_1.jsxs)("div", { ...rest, ref: setRootRef, "data-tone": tone, className: ["luma-glass", className].filter(Boolean).join(" "), style: { ...variables, ...style }, children: [(0, jsx_runtime_1.jsx)("canvas", { ref: webglCanvasRef, className: "luma-glass__refraction", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("canvas", { ref: cpuCanvasRef, className: "luma-glass__refraction", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("span", { className: "luma-glass__surface", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("span", { className: "luma-glass__shell", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("span", { className: "luma-glass__contact", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("span", { className: "luma-glass__highlight", "aria-hidden": "true" }), (0, jsx_runtime_1.jsx)("div", { className: "luma-glass__content", children: children })] }));
 });
 
   };
@@ -396,7 +410,7 @@ function createCanvasRefractionRenderer(canvas, image) {
     let cachedHeight = 0;
     let pixels = null;
     return {
-        draw({ scene, glass, strength, thickness }) {
+        draw({ scene, glass, strength, thickness, radius }) {
             if (!scene.width || !scene.height || !glass.width || !glass.height)
                 return;
             if (strength <= 0) {
@@ -427,18 +441,17 @@ function createCanvasRefractionRenderer(canvas, image) {
             const destination = result.data;
             const originX = glass.left - scene.left;
             const originY = glass.top - scene.top;
-            const falloff = Math.max(42, Math.min(glass.width, glass.height) * 0.23)
-                + thickness * 0.8;
+            const offset = { x: 0, y: 0 };
             for (let y = 0; y < height; y++) {
                 const v = (y + 0.5) / height;
-                const influenceY = 0.07 + 0.93 * Math.exp(-Math.min(v, 1 - v) * glass.height / falloff);
-                const offsetY = (v * 2 - 1) * influenceY * strength * 0.92;
                 for (let x = 0; x < width; x++) {
                     const u = (x + 0.5) / width;
-                    const influenceX = 0.07 + 0.93 * Math.exp(-Math.min(u, 1 - u) * glass.width / falloff);
-                    const offsetX = (u * 2 - 1) * influenceX * strength * 0.92;
-                    const sx = Math.min(sourceWidth - 1, Math.max(0, Math.round((originX + u * glass.width + offsetX) * sourceWidth / scene.width)));
-                    const sy = Math.min(sourceHeight - 1, Math.max(0, Math.round((originY + v * glass.height + offsetY) * sourceHeight / scene.height)));
+                    (0, optics_1.getLensOffset)(
+                        u * glass.width, v * glass.height,
+                        glass.width, glass.height, radius, strength, thickness, offset,
+                    );
+                    const sx = Math.min(sourceWidth - 1, Math.max(0, Math.round((originX + u * glass.width + offset.x) * sourceWidth / scene.width)));
+                    const sy = Math.min(sourceHeight - 1, Math.max(0, Math.round((originY + v * glass.height + offset.y) * sourceHeight / scene.height)));
                     const from = (sy * sourceWidth + sx) * 4;
                     const to = (y * width + x) * 4;
                     destination[to] = pixels[from];
@@ -483,16 +496,33 @@ uniform vec2 u_origin;
 uniform vec2 u_glassSize;
 uniform float u_strength;
 uniform float u_thickness;
+uniform float u_radius;
 
 void main() {
-  // A curved lens samples a broad strip, not just a few edge pixels.
-  // Keep a small center contribution; the direction stays continuous at center.
-  vec2 distanceToEdge = min(v_uv, 1.0 - v_uv) * u_glassSize;
-  float falloff = max(42.0, min(u_glassSize.x, u_glassSize.y) * 0.23)
-    + u_thickness * 0.8;
-  vec2 influence = mix(vec2(0.07), vec2(1.0), exp(-distanceToEdge / falloff));
-  vec2 direction = v_uv * 2.0 - 1.0;
-  vec2 offset = direction * influence * (u_strength * 0.92);
+  // Rounded rectangle SDF and analytic outward normal. Only the thin
+  // inner rim displaces the image; no waves or soft-focus texture taps.
+  vec2 halfSize = u_glassSize * 0.5;
+  float radius = min(max(u_radius, 0.0), min(halfSize.x, halfSize.y));
+  vec2 local = v_uv * u_glassSize - halfSize;
+  vec2 q = abs(local) - (halfSize - vec2(radius));
+  vec2 positiveQ = max(q, vec2(0.0));
+  float cornerLength = length(positiveQ);
+  float signedDistance = cornerLength + min(max(q.x, q.y), 0.0) - radius;
+  float band = clamp(min(u_glassSize.x, u_glassSize.y) * 0.12, 16.0, 44.0)
+    + u_thickness * 0.45;
+  float proximity = clamp(1.0 + signedDistance / band, 0.0, 1.0);
+  float influence = proximity * proximity * (3.0 - 2.0 * proximity);
+  vec2 normal = vec2(0.0);
+  if (cornerLength > 0.0001) {
+    normal = sign(local) * positiveQ / cornerLength;
+  } else if (q.x > q.y) {
+    normal.x = sign(local.x);
+  } else {
+    normal.y = sign(local.y);
+  }
+  vec2 offset = signedDistance <= 0.0
+    ? normal * (u_strength * 0.82 * influence)
+    : vec2(0.0);
   vec2 point = clamp(
     u_origin + v_uv * u_glassSize + offset,
     vec2(0.0), u_sceneSize
@@ -604,9 +634,10 @@ function createRefractionRenderer(canvas, image) {
         glassSize: uniform("u_glassSize"),
         strength: uniform("u_strength"),
         thickness: uniform("u_thickness"),
+        radius: uniform("u_radius"),
     };
     return {
-        draw({ scene, glass, strength, thickness }) {
+        draw({ scene, glass, strength, thickness, radius }) {
             if (!glass.width || !glass.height || !scene.width || !scene.height)
                 return;
             const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
@@ -633,6 +664,7 @@ function createRefractionRenderer(canvas, image) {
             gl.uniform2f(uniforms.glassSize, glass.width, glass.height);
             gl.uniform1f(uniforms.strength, strength);
             gl.uniform1f(uniforms.thickness, thickness);
+            gl.uniform1f(uniforms.radius, radius);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             canvas.style.opacity = strength > 0 ? "1" : "0";
         },
@@ -654,6 +686,7 @@ function createRefractionRenderer(canvas, image) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCoverLayout = getCoverLayout;
 exports.clamp = clamp;
+exports.getLensOffset = getLensOffset;
 function getCoverLayout(sceneWidth, sceneHeight, imageWidth, imageHeight) {
     if (sceneWidth <= 0 ||
         sceneHeight <= 0 ||
@@ -673,6 +706,45 @@ function getCoverLayout(sceneWidth, sceneHeight, imageWidth, imageHeight) {
 }
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
+}
+function getLensOffset(
+  x, y,
+  width, height,
+  radius, strength, thickness,
+  out = { x: 0, y: 0 },
+) {
+  out.x = 0;
+  out.y = 0;
+  if (width <= 0 || height <= 0 || strength <= 0) return out;
+  const halfWidth = width * 0.5;
+  const halfHeight = height * 0.5;
+  const r = Math.min(Math.max(0, radius), halfWidth, halfHeight);
+  const localX = x - halfWidth;
+  const localY = y - halfHeight;
+  const qx = Math.abs(localX) - (halfWidth - r);
+  const qy = Math.abs(localY) - (halfHeight - r);
+  const positiveX = Math.max(qx, 0);
+  const positiveY = Math.max(qy, 0);
+  const cornerLength = Math.hypot(positiveX, positiveY);
+  const signedDistance = cornerLength + Math.min(Math.max(qx, qy), 0) - r;
+  if (signedDistance > 0) return out;
+
+  const band = Math.min(44, Math.max(16, Math.min(width, height) * 0.12))
+    + thickness * 0.45;
+  const proximity = Math.max(0, Math.min(1, 1 + signedDistance / band));
+  if (proximity === 0) return out;
+  const influence = proximity * proximity * (3 - 2 * proximity);
+  const displacement = strength * 0.82 * influence;
+
+  if (cornerLength > 0.0001) {
+    out.x = Math.sign(localX) * positiveX / cornerLength * displacement;
+    out.y = Math.sign(localY) * positiveY / cornerLength * displacement;
+  } else if (qx > qy) {
+    out.x = Math.sign(localX) * displacement;
+  } else {
+    out.y = Math.sign(localY) * displacement;
+  }
+  return out;
 }
 
   };
