@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { GlassScene, LiquidGlass } from "../index";
+import type { ActiveRenderer, RefractionMode } from "../index";
 
 export function App() {
   const [opacity, setOpacity] = useState(0.4);
   const [refraction, setRefraction] = useState(23);
   const [showOriginal, setShowOriginal] = useState(false);
   const [thickness, setThickness] = useState(1.8);
+  const [renderMode, setRenderMode] = useState<RefractionMode>("canvas");
+  const [activeRenderer, setActiveRenderer] = useState<ActiveRenderer>("none");
 
   return (
     <div className="page">
@@ -41,6 +44,8 @@ export function App() {
             opacity={opacity}
             refraction={showOriginal ? 0 : refraction}
             thickness={thickness}
+            renderMode={renderMode}
+            onRendererChange={setActiveRenderer}
           >
             <div className="glass-inner">
               <div className="glass-eyebrow"><span className="glass-star">✳</span> OPTICAL MATERIAL</div>
@@ -91,8 +96,16 @@ export function App() {
             <div className="control-scale"><span>Thin</span><span>Thick</span></div>
           </div>
           <div className="controls-bottom">
-            <span className="status"><i /> {showOriginal ? "Original background · refraction paused" : "Image-backed WebGL · CSS optical shell"}</span>
+            <span className="status"><i /> {showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"}</span>
             <div className="control-actions">
+              <label className="render-picker" htmlFor="render-mode">
+                Renderer
+                <select id="render-mode" value={renderMode} onChange={(event) => setRenderMode(event.target.value as RefractionMode)}>
+                  <option value="canvas">Canvas 2D · no WebGL</option>
+                  <option value="auto">Auto · WebGL → Canvas</option>
+                  <option value="webgl">WebGL · Canvas fallback</option>
+                </select>
+              </label>
               <button type="button" aria-pressed={showOriginal} onClick={() => setShowOriginal((value) => !value)}>
                 {showOriginal ? "Show refraction" : "Show original"}
               </button>
