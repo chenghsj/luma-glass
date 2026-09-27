@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { GlassProvider, GlassScene, LiquidGlass } from "../index";
-import type { ActiveRenderer, RefractionMode } from "../index";
+import { GlassProvider, LiquidGlass } from "../index";
 
 function OpticalStar() {
   return (
@@ -25,8 +24,7 @@ export function App() {
   const [refraction, setRefraction] = useState(23);
   const [showOriginal, setShowOriginal] = useState(false);
   const [thickness, setThickness] = useState(0.5);
-  const [renderMode, setRenderMode] = useState<RefractionMode>("auto");
-  const [activeRenderer, setActiveRenderer] = useState<ActiveRenderer>("none");
+  const [supported, setSupported] = useState<boolean | null>(null);
   const glassRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
     pointerId: number;
@@ -138,9 +136,16 @@ export function App() {
           refraction: showOriginal ? 0 : refraction,
           thickness,
           radius: 40,
-          renderMode,
         }}>
-          <GlassScene image={`${import.meta.env.BASE_URL}scene.svg`} className="demo-stage">
+          <div className="demo-stage" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}scene.svg)` }}>
+            <div className="demo-underlay" aria-label="React component behind the glass">
+              <span className="underlay-check" aria-hidden="true">✓</span>
+              <div className="underlay-copy">
+                <strong>LOWER LAYER</strong>
+                <span>Real React component</span>
+              </div>
+              <div className="underlay-footer"><span>BEHIND GLASS</span><span className="underlay-dots" aria-hidden="true">● ●</span></div>
+            </div>
             <LiquidGlass
               className="demo-glass"
               ref={glassRef}
@@ -149,7 +154,7 @@ export function App() {
               onPointerUp={onGlassPointerEnd}
               onPointerCancel={onGlassPointerEnd}
               onLostPointerCapture={onGlassPointerEnd}
-              onRendererChange={setActiveRenderer}
+              onSupportChange={setSupported}
             >
             <div className="glass-inner">
               <div className="glass-eyebrow"><span className="glass-star" aria-hidden="true"><OpticalStar /></span> OPTICAL MATERIAL</div>
@@ -157,7 +162,7 @@ export function App() {
               <div className="glass-description">Light, depth and refraction.</div>
             </div>
             </LiquidGlass>
-          </GlassScene>
+          </div>
         </GlassProvider>
         <p className="demo-drag-hint">Drag the glass to explore refraction.</p>
 
@@ -186,7 +191,7 @@ export function App() {
               }}
             />
             <div className="control-scale"><span>None</span><span>Strong</span></div>
-            <p className="control-hint">Compare the Lower Layer card border behind the glass.</p>
+            <p className="control-hint">Move the glass over the React component to see its text and border bend.</p>
           </div>
           <div className="control">
             <div className="control-head">
@@ -211,21 +216,13 @@ export function App() {
             <div className="control-scale"><span>Subtle</span><span>Bright</span></div>
           </div>
           <div className="controls-bottom">
-            <span className="status"><i /> {showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"}</span>
+            <span className="status" data-supported={supported === null ? "unknown" : supported ? "true" : "false"}><i /> {supported === null ? "Checking browser support…" : !supported ? "SVG backdrop refraction not supported in this browser" : showOriginal ? "Refraction supported · paused" : "SVG backdrop refraction supported · Chromium"}</span>
             <div className="control-actions">
               <label className="render-picker tone-picker" htmlFor="glass-tone">
                 Glass tone
                 <select id="glass-tone" value={tone} onChange={(event) => setTone(event.target.value as "light" | "dark")}>
                   <option value="dark">Dark</option>
                   <option value="light">Light</option>
-                </select>
-              </label>
-              <label className="render-picker" htmlFor="render-mode">
-                Renderer
-                <select id="render-mode" value={renderMode} onChange={(event) => setRenderMode(event.target.value as RefractionMode)}>
-                  <option value="auto">Auto · WebGL → Canvas</option>
-                  <option value="webgl">WebGL · Canvas fallback</option>
-                  <option value="canvas">Canvas 2D · no WebGL</option>
                 </select>
               </label>
               <button type="button" aria-pressed={showOriginal} onClick={() => setShowOriginal((value) => !value)}>
@@ -237,7 +234,6 @@ export function App() {
                 setTone("dark");
                 setRefraction(23);
                 setThickness(0.5);
-                setRenderMode("auto");
                 setShowOriginal(false);
                 dragRef.current = null;
                 glassRef.current?.classList.remove("is-dragging");
@@ -248,8 +244,8 @@ export function App() {
           </div>
         </section>
         <p className="footnote">
-          Refraction samples the scene image, not arbitrary DOM beneath it.
-          Use a same-origin or CORS-enabled image in your own scene.
+          The lower layer is a real React component. SVG backdrop refraction is currently supported in Chromium;
+          other browsers display the glass surface without displacement.
         </p>
       </main>
     </div>

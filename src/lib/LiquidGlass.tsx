@@ -1,40 +1,32 @@
 import {
   forwardRef,
   useCallback,
-  useContext,
   useEffect,
+  useId,
   useRef,
+  useState,
   type CSSProperties,
   type HTMLAttributes,
 } from "react";
-import { GlassSceneContext } from "./GlassScene";
 import { useGlassDefaults } from "./GlassProvider";
 import { clamp } from "./optics";
-import { createCanvasRefractionRenderer } from "./canvas";
-import {
-  createRefractionRenderer,
-  type RefractionRenderer,
-} from "./webgl";
-
-export type RefractionMode = "auto" | "canvas" | "webgl";
-export type ActiveRenderer = "none" | "canvas" | "webgl";
+import { createDisplacementMap, type DisplacementMap } from "./displacement";
+import { isBackdropRefractionSupported } from "./support";
 
 export interface LiquidGlassProps extends HTMLAttributes<HTMLDivElement> {
-  /** canvas never creates a WebGL context; auto prefers WebGL, then Canvas 2D. */
-  renderMode?: RefractionMode;
-  /** Reports the actual renderer, including any fallback. */
-  onRendererChange?: (renderer: ActiveRenderer) => void;
+  /** Reports whether this browser is expected to render SVG backdrop refraction. */
+  onSupportChange?: (supported: boolean) => void;
   /** Glass surface opacity, from 0 to 1. Default: 0.1. */
   opacity?: number;
   /** Independent opacity for the optical rim and highlights, 0 to 1. Default: 0.15. */
   borderOpacity?: number;
-  /** Glass tint; dark matches a low-light system-glass look. Default: light. */
+  /** Glass tint. Default: light. */
   tone?: "light" | "dark";
-  /** Optical displacement in CSS pixels, from 0 to 60. Default: 23. */
+  /** Edge displacement in CSS pixels, from 0 to 60. Default: 23. */
   refraction?: number;
   /** Optical shell thickness in CSS pixels, from 0.5 to 6. Default: 0.5. */
   thickness?: number;
-  /** Fixed glass corner radius in CSS pixels. Default: 28. */
+  /** Optical corner radius in CSS pixels. Default: 28. */
   radius?: number;
 }
 
@@ -47,8 +39,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
       refraction: refractionProp,
       thickness: thicknessProp,
       radius: radiusProp,
-      renderMode: renderModeProp,
-      onRendererChange,
+      onSupportChange,
       className,
       style,
       children,
@@ -56,152 +47,82 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
     },
     forwardedRef,
   ) {
-    const scene = useContext(GlassSceneContext);
     const defaults = useGlassDefaults();
-    // Individual props win over provider defaults; classes can customize
-    // active CSS variables when their corresponding prop was not provided.
     const opacity = opacityProp ?? defaults.opacity;
     const borderOpacity = borderOpacityProp ?? defaults.borderOpacity;
     const tone = toneProp ?? defaults.tone;
     const refraction = refractionProp ?? defaults.refraction;
     const thickness = thicknessProp ?? defaults.thickness;
     const radius = radiusProp ?? defaults.radius;
-    const renderMode = renderModeProp ?? defaults.renderMode;
     const rootRef = useRef<HTMLDivElement | null>(null);
-    const webglCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const cpuCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const rendererRef = useRef<RefractionRenderer | null>(null);
-    const redrawRef = useRef<(() => void) | null>(null);
-    const opticalValues = useRef({ refraction, thickness, radius });
-    opticalValues.current = { refraction, thickness, radius };
-    const onChangeRef = useRef(onRendererChange);
-    onChangeRef.current = onRendererChange;
+    const callbackRef = useRef(onSupportChange);
+    callbackRef.current = onSupportChange;
+    const [supported, setSupported] = useState(false);
+    const [map, setMap] = useState<DisplacementMap | null>(null);
+    const filterId = `luma-filter-` + useId().replace(/:/g, "");
 
     const setRootRef = useCallback(
       (element: HTMLDivElement | null) => {
         rootRef.current = element;
-        if (typeof forwardedRef === "function") {
-          forwardedRef(element);
-        } else if (forwardedRef) {
-          forwardedRef.current = element;
-        }
+        if (typeof forwardedRef === "function") forwardedRef(element);
+        else if (forwardedRef) forwardedRef.current = element;
       },
       [forwardedRef],
     );
 
     useEffect(() => {
+      const available = isBackdropRefractionSupported();
+      setSupported(available);
+      callbackRef.current?.(available);
+    }, []);
+
+    useEffect(() => {
       const root = rootRef.current;
-      const sceneRoot = scene?.sceneRef.current;
-      const image = scene?.imageElement;
-      const webglCanvas = webglCanvasRef.current;
-      const cpuCanvas = cpuCanvasRef.current;
-      if (!root || !sceneRoot || !image || !webglCanvas || !cpuCanvas) {
-        onChangeRef.current?.("none");
+      if (!root || !supported) {
+        setMap(null);
         return;
       }
 
-      let renderer: RefractionRenderer | null = null;
-      let active: ActiveRenderer = "none";
-      if (renderMode !== "canvas") {
-        try {
-          renderer = createRefractionRenderer(webglCanvas, image);
-          if (renderer) active = "webgl";
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.warn("[luma-glass] WebGL unavailable; trying Canvas 2D:", error);
-          }
-        }
-      }
-      if (!renderer) {
-        try {
-          renderer = createCanvasRefractionRenderer(cpuCanvas, image);
-          active = "canvas";
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.warn("[luma-glass] Image refraction unavailable:", error);
-          }
-        }
-      }
-      onChangeRef.current?.(active);
-      if (!renderer) return;
-
-      rendererRef.current = renderer;
-      let currentRenderer = renderer;
       let pending = 0;
-      const draw = () => {
+      let lastKey = "";
+      const regenerate = () => {
         pending = 0;
-        const values = opticalValues.current;
-        const computed = window.getComputedStyle(root);
-        // Match optical sampling to CSS custom properties set via className.
-        const cssRefraction = Number.parseFloat(computed.getPropertyValue("--luma-refraction"));
-        const cssThickness = Number.parseFloat(computed.getPropertyValue("--luma-thickness"));
-        const cssRadius = Number.parseFloat(computed.getPropertyValue("--luma-radius"));
-        const frame = {
-          scene: sceneRoot.getBoundingClientRect(),
-          glass: root.getBoundingClientRect(),
-          strength: clamp(Number.isFinite(cssRefraction) ? cssRefraction : values.refraction, 0, 60),
-          thickness: clamp(Number.isFinite(cssThickness) ? cssThickness : values.thickness, 0.5, 6),
-          radius: Math.max(0, Number.isFinite(cssRadius) ? cssRadius : values.radius),
-        };
+        const bounds = root.getBoundingClientRect();
+        const css = window.getComputedStyle(root);
+        const cssRefraction = Number.parseFloat(css.getPropertyValue("--luma-refraction"));
+        const cssThickness = Number.parseFloat(css.getPropertyValue("--luma-thickness"));
+        const cssRadius = Number.parseFloat(css.getPropertyValue("--luma-radius"));
+        const strength = clamp(Number.isFinite(cssRefraction) ? cssRefraction : refraction, 0, 60);
+        const edge = clamp(Number.isFinite(cssThickness) ? cssThickness : thickness, 0.5, 6);
+        const corners = Math.max(0, Number.isFinite(cssRadius) ? cssRadius : radius);
+        const width = Math.max(0, bounds.width);
+        const height = Math.max(0, bounds.height);
+        const key = [width, height, strength, edge, corners].join(":");
+        if (lastKey === key) return;
+        lastKey = key;
         try {
-          currentRenderer.draw(frame);
+          setMap(createDisplacementMap(width, height, corners, strength, edge));
         } catch (error) {
-          if (import.meta.env.DEV) console.warn("[luma-glass] Renderer failed:", error);
-          if (active === "webgl") {
-            currentRenderer.dispose();
-            try {
-              currentRenderer = createCanvasRefractionRenderer(cpuCanvas, image);
-              currentRenderer.draw(frame);
-              rendererRef.current = currentRenderer;
-              active = "canvas";
-              onChangeRef.current?.("canvas");
-              return;
-            } catch (fallbackError) {
-              if (import.meta.env.DEV) {
-                console.warn("[luma-glass] Canvas fallback failed:", fallbackError);
-              }
-            }
-          }
-          currentRenderer.dispose();
-          rendererRef.current = null;
-          onChangeRef.current?.("none");
+          if (import.meta.env.DEV) console.warn("[luma-glass] Displacement map unavailable:", error);
+          setMap(null);
         }
       };
       const schedule = () => {
-        if (!pending && rendererRef.current) {
-          pending = window.requestAnimationFrame(draw);
-        }
+        if (!pending) pending = window.requestAnimationFrame(regenerate);
       };
-      redrawRef.current = schedule;
-      const observer = new ResizeObserver(schedule);
-      observer.observe(sceneRoot);
-      observer.observe(root);
-      // Moving a glass via left/top or transform does not fire ResizeObserver.
-      const positionObserver = new MutationObserver(schedule);
-      positionObserver.observe(root, { attributes: true, attributeFilter: ["style", "class"] });
-      window.addEventListener("scroll", schedule, true);
-      window.addEventListener("resize", schedule);
+      const resize = new ResizeObserver(schedule);
+      resize.observe(root);
+      const attributes = new MutationObserver(schedule);
+      attributes.observe(root, { attributes: true, attributeFilter: ["class", "style"] });
       schedule();
 
       return () => {
         if (pending) window.cancelAnimationFrame(pending);
-        observer.disconnect();
-        positionObserver.disconnect();
-        window.removeEventListener("scroll", schedule, true);
-        window.removeEventListener("resize", schedule);
-        currentRenderer.dispose();
-        rendererRef.current = null;
-        redrawRef.current = null;
+        resize.disconnect();
+        attributes.disconnect();
       };
-    }, [scene?.imageElement, scene?.sceneRef, renderMode]);
+    }, [supported, refraction, thickness, radius]);
 
-    useEffect(() => {
-      // The renderer effect owns error handling and WebGL → Canvas fallback.
-      redrawRef.current?.();
-    }, [refraction, thickness, radius, scene?.imageElement, renderMode]);
-
-    // Base variables are class-overridable. Explicit props write the active
-    // variable inline, taking priority over className.
     const variables = {
       "--luma-opacity-base": clamp(opacity, 0, 1),
       "--luma-border-opacity-base": clamp(borderOpacity, 0, 1),
@@ -215,16 +136,40 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
       ...(radiusProp !== undefined ? { "--luma-radius": Math.max(0, radius) + "px" } : {}),
     } as CSSProperties;
 
+    const backdrop = supported && map ? { backdropFilter: `url(#` + filterId + `)`,
+      WebkitBackdropFilter: `url(#` + filterId + `)` } : undefined;
+
     return (
       <div
         {...rest}
         ref={setRootRef}
         data-tone={tone}
+        data-refraction-supported={supported ? "true" : "false"}
         className={["luma-glass", className].filter(Boolean).join(" ")}
         style={{ ...variables, ...style }}
       >
-        <canvas ref={webglCanvasRef} className="luma-glass__refraction" aria-hidden="true" />
-        <canvas ref={cpuCanvasRef} className="luma-glass__refraction" aria-hidden="true" />
+        {map && supported && (
+          <svg className="luma-glass__filter" aria-hidden="true" focusable="false">
+            <defs>
+              <filter
+                id={filterId}
+                x="-50%" y="-50%" width="200%" height="200%"
+                filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse"
+                colorInterpolationFilters="sRGB"
+              >
+                <feImage
+                  key={map.url}
+                  href={map.url}
+                  x="0" y="0" width={map.width} height={map.height}
+                  preserveAspectRatio="none" result="displacement"
+                />
+                <feDisplacementMap in="SourceGraphic" in2="displacement"
+                  scale="128" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+            </defs>
+          </svg>
+        )}
+        {backdrop && <span className="luma-glass__refraction" style={backdrop} aria-hidden="true" />}
         <span className="luma-glass__surface" aria-hidden="true" />
         <span className="luma-glass__shell" aria-hidden="true" />
         <span className="luma-glass__contact" aria-hidden="true" />

@@ -16,16 +16,5 @@
   <path d="M-96 361C92 163 206 566 406 269S667 103 852 258" stroke-width="3" opacity=".92"/>
  </g>
  <text x="26" y="421" fill="white" fill-opacity=".24" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="166" letter-spacing="-11" font-weight="800">fluid.</text>
- <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <rect x="438" y="254" width="291" height="161" rx="28" fill="url(#rear)" stroke="white" stroke-opacity=".95" stroke-width="1.5"/>
-  <circle cx="479" cy="302" r="19" fill="white" fill-opacity=".55" stroke="white" stroke-opacity=".9"/>
-  <path d="M471 302l7 7 12-16" fill="none" stroke="#7281b1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="509" y="298" fill="#415075" font-size="12" font-weight="800" letter-spacing=".8">LOWER LAYER</text>
-  <text x="509" y="321" fill="#54627f" font-size="11" font-weight="550">Visible through glass</text>
-  <path d="M461 353H700" stroke="white" stroke-opacity=".75"/>
-  <rect x="462" y="370" width="122" height="24" rx="12" fill="white" fill-opacity=".55"/>
-  <text x="475" y="386" fill="#556487" font-size="10" font-weight="750">BEHIND GLASS</text>
-  <circle cx="681" cy="382" r="5" fill="#7c9bcc"/><circle cx="700" cy="382" r="5" fill="#e5a2b2"/>
- </g>
  <text x="28" y="449" fill="#415174" fill-opacity=".73" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="10" font-weight="750" letter-spacing="1.4">LIGHT · DEPTH · REFRACTION</text>
 </svg>

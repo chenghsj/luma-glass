@@ -1,10 +1,4 @@
 @layer components {
-.luma-scene {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-
 .luma-glass {
   /* Base values can be overridden by a class without fighting inline styles. */
   --luma-opacity: var(--luma-opacity-base, .1);
@@ -21,9 +15,6 @@
   border-radius: var(--luma-radius);
   overflow: hidden;
   background: transparent;
-  /* Browsers can composite underlying DOM, but they cannot generically refract it. */
-  -webkit-backdrop-filter: saturate(135%);
-  backdrop-filter: saturate(135%);
 }
 
 .luma-glass__refraction,
@@ -39,9 +30,16 @@
   box-sizing: border-box;
 }
 
+.luma-glass__filter {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .luma-glass__refraction {
   z-index: 0;
-  opacity: 0;
   display: block;
   border-radius: inherit;
 }
@@ -55,7 +53,7 @@
 }
 
 .luma-glass[data-tone="dark"] .luma-glass__surface {
-  /* Neutral charcoal tint; the sampled scene stays sharp under the surface. */
+  /* The backdrop stays sharp under the surface. */
   background:
     linear-gradient(160deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .025) 48%, rgba(255, 255, 255, .06)),
     rgba(24, 26, 31, var(--luma-opacity));

@@ -1,12 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { CSSProperties } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { GlassProvider, useGlassDefaults } from "./GlassProvider";
+import { GlassProvider } from "./GlassProvider";
 import { LiquidGlass } from "./LiquidGlass";
-
-function ModeProbe() {
-  return <span>{useGlassDefaults().renderMode}</span>;
-}
 
 describe("GlassProvider", () => {
   it("preserves the built-in defaults outside a provider", () => {
@@ -16,6 +12,8 @@ describe("GlassProvider", () => {
     expect(markup).toContain('data-tone="light"');
     expect(markup).toContain("--luma-thickness-base:0.5px");
     expect(markup).toContain("--luma-radius-base:28px");
+    expect(markup).toContain('data-refraction-supported="false"');
+    expect(markup).not.toContain("<canvas");
   });
 
   it("applies shared settings to every glass and allows a local override", () => {
@@ -34,19 +32,18 @@ describe("GlassProvider", () => {
     expect(markup.match(/--luma-radius-base:36px/g)).toHaveLength(2);
   });
 
-  it("merges nested defaults without losing inherited renderer settings", () => {
+  it("merges nested defaults by field", () => {
     const markup = renderToStaticMarkup(
-      <GlassProvider defaults={{ opacity: 0.5, borderOpacity: 0.2, renderMode: "canvas" }}>
+      <GlassProvider defaults={{ opacity: 0.5, borderOpacity: 0.2, radius: 32 }}>
         <GlassProvider defaults={{ thickness: 3 }}>
           <LiquidGlass>Nested</LiquidGlass>
-          <ModeProbe />
         </GlassProvider>
       </GlassProvider>,
     );
     expect(markup).toContain("--luma-opacity-base:0.5");
     expect(markup).toContain("--luma-border-opacity-base:0.2");
     expect(markup).toContain("--luma-thickness-base:3px");
-    expect(markup).toContain("<span>canvas</span>");
+    expect(markup).toContain("--luma-radius-base:32px");
   });
 
   it("uses the nearest provider and explicit component values", () => {

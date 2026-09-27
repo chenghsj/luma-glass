@@ -7,10 +7,9 @@ const files = [
   "src/demo/App.tsx",
   "src/index.ts",
   "src/lib/GlassProvider.tsx",
-  "src/lib/GlassScene.tsx",
   "src/lib/LiquidGlass.tsx",
-  "src/lib/canvas.ts",
-  "src/lib/webgl.ts",
+  "src/lib/displacement.ts",
+  "src/lib/support.ts",
   "src/lib/optics.ts",
 ];
 
