@@ -71,10 +71,10 @@ const [demoCss, libraryCss] = await Promise.all([
   readFile("src/lib/styles.css", "utf8"),
 ]);
 const styles =
-  "/* Generated from the React demo and library. */\\n" +
-  demoCss + "\\n" + libraryCss +
-  "\\n#boot-status{margin:7rem auto;max-width:630px;text-align:center;font:600 14px -apple-system,BlinkMacSystemFont,sans-serif;color:#65728c;padding:20px}\\n" +
-  "#boot-status.boot-error{color:#a4374a;background:#fff1f3;border:1px solid #ffd7de;border-radius:14px}\\n";
+  "/* Generated from the React demo and library. */\n" +
+  demoCss + "\n" + libraryCss +
+  "\n#boot-status{margin:7rem auto;max-width:630px;text-align:center;font:600 14px -apple-system,BlinkMacSystemFont,sans-serif;color:#65728c;padding:20px}\n" +
+  "#boot-status.boot-error{color:#a4374a;background:#fff1f3;border:1px solid #ffd7de;border-radius:14px}\n";
 await writeFile("docs/styles.css", styles);
 
 // Change asset URLs whenever either the JavaScript or the stylesheet changes.
