@@ -1,14 +1,14 @@
 # Luma Glass
 
-**[Live Demo](https://chenghsj.github.io/luma-glass/)** · [Usage](#usage) · [Browser support](#browser-support) · [Tailwind & CVA](#tailwind--cva)
+**[Live Demo](https://chenghsj.github.io/luma-glass/)** · [Usage](#usage) · [Browser support](#browser-support)
 
-A React + TypeScript liquid-glass component that refracts the live DOM behind it: text, images, buttons, and other React components. No special image container is required.
+A React + TypeScript glass component that refracts the live DOM behind it—including text, images, and other React components. No background image or scene wrapper is required.
 
-> Prototype: the package is not published to npm yet.
+> Prototype: not yet published to npm.
 
-## Get started
+## Quick start
 
-Run the playground locally:
+Run the [playground](https://chenghsj.github.io/luma-glass/) locally:
 
 ```bash
 git clone https://github.com/chenghsj/luma-glass.git
@@ -17,11 +17,9 @@ npm install
 npm run dev
 ```
 
-To use the package in another React project before its npm release, run `npm run build && npm pack` in this repo, then install the generated `.tgz` file in your project.
+To use Luma Glass in another project before its npm release, run `npm run build && npm pack` in this repository, then install the generated `.tgz` file in your React project.
 
 ## Usage
-
-Import the stylesheet and position `LiquidGlass` over ordinary React content:
 
 ```tsx
 import { LiquidGlass } from "@chenghsj/luma-glass";
@@ -29,40 +27,24 @@ import "@chenghsj/luma-glass/style.css";
 
 export function Example() {
   return (
-    <div style={{ position: "relative", minHeight: 440 }}>
-      <div style={{ padding: 48 }}>
-        <h2>Real React content behind the glass</h2>
-        <button type="button">An ordinary DOM button</button>
+    <div style={{ position: "relative", minHeight: 320 }}>
+      <div>
+        <h2>Content behind the glass</h2>
+        <button>Ordinary React content</button>
       </div>
 
       <LiquidGlass
         tone="dark"
-        style={{ position: "absolute", top: 40, left: 40, width: 320, padding: 24 }}
+        style={{ position: "absolute", top: 32, left: 32, width: 280, padding: 24 }}
       >
         <h2>Liquid Glass</h2>
-        <p>The backdrop bends near the optical edge.</p>
       </LiquidGlass>
     </div>
   );
 }
 ```
 
-No `GlassScene`, background-image prop, DOM clone, or screenshot is needed.
-
-## Appearance
-
-| Prop | Default | Description |
-| --- | --- | --- |
-| `opacity` | `0.1` | Surface opacity (0–1) |
-| `borderOpacity` | `0.15` | Optical edge opacity (0–1) |
-| `refraction` | `23` | Edge displacement (0–60 CSS px) |
-| `thickness` | `0.5` | Optical edge thickness (0.5–6 CSS px) |
-| `radius` | `28` | Optical corner radius (CSS px) |
-| `tone` | `"light"` | `"light"` or `"dark"` |
-| `className` / `style` | — | Layout and custom appearance |
-| `onSupportChange` | — | Reports whether DOM backdrop refraction is expected to work |
-
-Set shared appearance defaults with `GlassProvider`. Explicit component props override provider defaults:
+Use `GlassProvider` to share appearance defaults; explicit `LiquidGlass` props override them:
 
 ```tsx
 import { GlassProvider, LiquidGlass } from "@chenghsj/luma-glass";
@@ -73,66 +55,62 @@ import { GlassProvider, LiquidGlass } from "@chenghsj/luma-glass";
 </GlassProvider>
 ```
 
-## Browser support
+## Props
 
-As of September 2026, Luma Glass generates a displacement texture in a shared Web Worker using `OffscreenCanvas` and uses SVG `feDisplacementMap` through CSS `backdrop-filter` to refract the browser's composited backdrop. Canvas does **not** sample or screenshot the DOM.
-
-| Browser engine | DOM refraction | Glass surface and border |
+| Prop | Default | Description |
 | --- | --- | --- |
-| Chromium (Chrome, Edge, Brave) | Supported when SVG backdrop filters are enabled | Supported |
-| WebKit (Safari and iOS browsers) | Not currently supported | Supported |
-| Gecko (Firefox) | Not currently supported | Supported |
+| `opacity` | `0.1` | Surface opacity (0–1) |
+| `borderOpacity` | `0.15` | Optical edge opacity (0–1) |
+| `refraction` | `23` | Edge displacement (0–60 CSS px) |
+| `thickness` | `0.5` | Edge thickness (0.5–6 CSS px) |
+| `radius` | `28` | Corner radius (CSS px) |
+| `tone` | `"light"` | `"light"` or `"dark"` |
+| `onSupportChange` | — | Reports estimated DOM-refraction support |
 
-The demo shows **supported / not supported**. Detection uses the browser engine and `CSS.supports`; it is a conservative capability estimate, not a pixel-level rendering test. Some browsers accept `backdrop-filter: url(#filter)` but do not render the SVG graph. There is no legacy image, WebGL, or screenshot-based refraction fallback. On unsupported browsers the glass surface remains visible without displacement.
+`LiquidGlass` also accepts standard div props such as `className` and `style`.
 
-References: [WebKit SVG backdrop-filter issue](https://bugs.webkit.org/show_bug.cgi?id=245510) · [Mozilla feature request](https://connect.mozilla.org/t5/ideas/support-svg-filters-in-backdrop-filter-for-advanced-glass/idi-p/98458)
+## Tailwind & custom variants
 
-## Performance
-
-Displacement maps are generated in **one shared, lazily created Web Worker** using `OffscreenCanvas.convertToBlob()`. Browser DOM measurement and SVG updates remain on the main thread; backdrop compositing still belongs to the browser. Each glass permits one request in flight and keeps only its latest queued settings, so rapid slider changes cannot create an unbounded worker backlog. Blob URLs are revoked when maps are replaced or the component unmounts.
-
-If Web Workers or `OffscreenCanvas` are unavailable—or the worker fails—the same displacement algorithm runs on the main thread. This is a **map-generation fallback**, not a return to the old image-only refraction renderer. Dragging a fixed-size glass does not regenerate its map.
-
-## Tailwind & CVA
-
-Luma Glass does not bundle Tailwind, CVA, or predefined variants. Consumers own their variants and pass their classes through `className`. The library's stylesheet uses `@layer components` so Tailwind v4 utilities can override it.
-
-For example, in an app with `class-variance-authority`:
+The library has no built-in variants or Tailwind/CVA dependency. Define your own styles with `className`, CSS variables, or CVA:
 
 ```tsx
-import { cva, type VariantProps } from "class-variance-authority";
-import { LiquidGlass, type LiquidGlassProps } from "@chenghsj/luma-glass";
+import { cva } from "class-variance-authority";
 
-const styles = cva("w-80 p-6", {
+const glassClass = cva("w-80 p-6", {
   variants: {
-    variant: {
-      subtle: "[--luma-opacity:0.06] [--luma-refraction:12]",
+    appearance: {
+      subtle: "[--luma-opacity:0.06]",
       strong: "[--luma-opacity:0.16] [--luma-refraction:38]",
     },
   },
-  defaultVariants: { variant: "subtle" },
 });
 
-type Props = LiquidGlassProps & VariantProps<typeof styles>;
-
-function GlassCard({ variant, className, ...props }: Props) {
-  return <LiquidGlass {...props} className={[styles({ variant }), className].filter(Boolean).join(" ")} />;
-}
+<LiquidGlass className={glassClass({ appearance: "strong" })}>
+  Custom glass
+</LiquidGlass>
 ```
 
-Optical variables: `--luma-opacity`, `--luma-border-opacity`, `--luma-refraction`, `--luma-thickness`, and `--luma-radius`. Explicit props take precedence over class-defined values. Use `radius` or `--luma-radius` to synchronize CSS corners and optical displacement; a `rounded-*` class alone is not sufficient.
+Optical variables: `--luma-opacity`, `--luma-border-opacity`, `--luma-refraction`, `--luma-thickness`, and `--luma-radius`. Use `radius` or `--luma-radius` instead of only `rounded-*` so the visual corners and refraction stay aligned. Explicit component props take priority over class-defined optical values.
+
+## Browser support
+
+| Browser | DOM refraction | Glass appearance |
+| --- | --- | --- |
+| Chromium-based browsers with SVG backdrop filters | Supported | Supported |
+| Safari and iOS browsers | Not supported | Supported |
+| Firefox | Not supported | Supported |
+
+The Demo reports estimated support; this is not a pixel-level rendering test. Displacement maps are generated in a shared Web Worker when available, with main-thread generation as a fallback. Unsupported browsers show the glass surface and border without refraction.
 
 ## Development
 
 ```bash
-npm install
-npm run dev
-npm run typecheck
 npm test
+npm run typecheck
 npm run build
 ```
 
-To update GitHub Pages, run `npm run build:pages` and commit the generated `docs/` directory.
+For GitHub Pages, run `npm run build:pages` and commit the generated `docs/` directory.
 
 ## License
 
