@@ -25,16 +25,33 @@ uniform vec2 u_origin;
 uniform vec2 u_glassSize;
 uniform float u_strength;
 uniform float u_thickness;
+uniform float u_radius;
 
 void main() {
-  // A curved lens samples a broad strip, not just a few edge pixels.
-  // Keep a small center contribution; the direction stays continuous at center.
-  vec2 distanceToEdge = min(v_uv, 1.0 - v_uv) * u_glassSize;
-  float falloff = max(42.0, min(u_glassSize.x, u_glassSize.y) * 0.23)
-    + u_thickness * 0.8;
-  vec2 influence = mix(vec2(0.07), vec2(1.0), exp(-distanceToEdge / falloff));
-  vec2 direction = v_uv * 2.0 - 1.0;
-  vec2 offset = direction * influence * (u_strength * 0.92);
+  // Rounded rectangle SDF and analytic outward normal. Only the thin
+  // inner rim displaces the image; no waves or soft-focus texture taps.
+  vec2 halfSize = u_glassSize * 0.5;
+  float radius = min(max(u_radius, 0.0), min(halfSize.x, halfSize.y));
+  vec2 local = v_uv * u_glassSize - halfSize;
+  vec2 q = abs(local) - (halfSize - vec2(radius));
+  vec2 positiveQ = max(q, vec2(0.0));
+  float cornerLength = length(positiveQ);
+  float signedDistance = cornerLength + min(max(q.x, q.y), 0.0) - radius;
+  float band = clamp(min(u_glassSize.x, u_glassSize.y) * 0.12, 16.0, 44.0)
+    + u_thickness * 0.45;
+  float proximity = clamp(1.0 + signedDistance / band, 0.0, 1.0);
+  float influence = proximity * proximity * (3.0 - 2.0 * proximity);
+  vec2 normal = vec2(0.0);
+  if (cornerLength > 0.0001) {
+    normal = sign(local) * positiveQ / cornerLength;
+  } else if (q.x > q.y) {
+    normal.x = sign(local.x);
+  } else {
+    normal.y = sign(local.y);
+  }
+  vec2 offset = signedDistance <= 0.0
+    ? normal * (u_strength * 0.82 * influence)
+    : vec2(0.0);
   vec2 point = clamp(
     u_origin + v_uv * u_glassSize + offset,
     vec2(0.0), u_sceneSize
@@ -49,6 +66,7 @@ export interface RefractionFrame {
   glass: DOMRect;
   strength: number;
   thickness: number;
+  radius: number;
 }
 
 export interface RefractionRenderer {
@@ -190,10 +208,11 @@ export function createRefractionRenderer(
     glassSize: uniform("u_glassSize"),
     strength: uniform("u_strength"),
     thickness: uniform("u_thickness"),
+    radius: uniform("u_radius"),
   };
 
   return {
-    draw({ scene, glass, strength, thickness }) {
+    draw({ scene, glass, strength, thickness, radius }) {
       if (!glass.width || !glass.height || !scene.width || !scene.height) return;
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
       const width = Math.max(1, Math.round(glass.width * pixelRatio));
@@ -227,6 +246,7 @@ export function createRefractionRenderer(
       gl.uniform2f(uniforms.glassSize, glass.width, glass.height);
       gl.uniform1f(uniforms.strength, strength);
       gl.uniform1f(uniforms.thickness, thickness);
+      gl.uniform1f(uniforms.radius, radius);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       canvas.style.opacity = strength > 0 ? "1" : "0";
     },

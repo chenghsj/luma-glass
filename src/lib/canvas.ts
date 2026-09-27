@@ -1,4 +1,4 @@
-import { getCoverLayout } from "./optics";
+import { getCoverLayout, getLensOffset } from "./optics";
 import type { RefractionFrame, RefractionRenderer } from "./webgl";
 
 /**
@@ -20,7 +20,7 @@ export function createCanvasRefractionRenderer(
   let pixels: Uint8ClampedArray | null = null;
 
   return {
-    draw({ scene, glass, strength, thickness }: RefractionFrame) {
+    draw({ scene, glass, strength, thickness, radius }: RefractionFrame) {
       if (!scene.width || !scene.height || !glass.width || !glass.height) return;
       if (strength <= 0) {
         canvas.style.opacity = "0";
@@ -55,26 +55,21 @@ export function createCanvasRefractionRenderer(
       const destination = result.data;
       const originX = glass.left - scene.left;
       const originY = glass.top - scene.top;
-      const falloff = Math.max(42, Math.min(glass.width, glass.height) * 0.23)
-        + thickness * 0.8;
+      const offset = { x: 0, y: 0 };
 
       for (let y = 0; y < height; y++) {
         const v = (y + 0.5) / height;
-        const influenceY = 0.07 + 0.93 * Math.exp(
-          -Math.min(v, 1 - v) * glass.height / falloff,
-        );
-        const offsetY = (v * 2 - 1) * influenceY * strength * 0.92;
         for (let x = 0; x < width; x++) {
           const u = (x + 0.5) / width;
-          const influenceX = 0.07 + 0.93 * Math.exp(
-            -Math.min(u, 1 - u) * glass.width / falloff,
+          getLensOffset(
+            u * glass.width, v * glass.height,
+            glass.width, glass.height, radius, strength, thickness, offset,
           );
-          const offsetX = (u * 2 - 1) * influenceX * strength * 0.92;
           const sx = Math.min(sourceWidth - 1, Math.max(0, Math.round(
-            (originX + u * glass.width + offsetX) * sourceWidth / scene.width,
+            (originX + u * glass.width + offset.x) * sourceWidth / scene.width,
           )));
           const sy = Math.min(sourceHeight - 1, Math.max(0, Math.round(
-            (originY + v * glass.height + offsetY) * sourceHeight / scene.height,
+            (originY + v * glass.height + offset.y) * sourceHeight / scene.height,
           )));
           const from = (sy * sourceWidth + sx) * 4;
           const to = (y * width + x) * 4;
