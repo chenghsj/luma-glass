@@ -5,10 +5,11 @@
 }
 
 .luma-glass {
-  --luma-opacity: .1;
-  --luma-border-opacity: .15;
-  --luma-thickness: 0.5px;
-  --luma-radius: 28px;
+  /* Base values can be overridden by a class without fighting inline styles. */
+  --luma-opacity: var(--luma-opacity-base, .1);
+  --luma-border-opacity: var(--luma-border-opacity-base, .15);
+  --luma-thickness: var(--luma-thickness-base, 0.5px);
+  --luma-radius: var(--luma-radius-base, 28px);
   --luma-top: calc(var(--luma-thickness) * .68);
   --luma-left: calc(var(--luma-thickness) * .76);
   --luma-right: calc(var(--luma-thickness) * 1.3);

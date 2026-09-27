@@ -8,7 +8,7 @@ import {
   type HTMLAttributes,
 } from "react";
 import { GlassSceneContext } from "./GlassScene";
-import { useGlassDefaults } from "./GlassProvider";
+import { glassVariantPresets, useGlassDefaults, type GlassVariant } from "./GlassProvider";
 import { clamp } from "./optics";
 import { createCanvasRefractionRenderer } from "./canvas";
 import {
@@ -20,6 +20,8 @@ export type RefractionMode = "auto" | "canvas" | "webgl";
 export type ActiveRenderer = "none" | "canvas" | "webgl";
 
 export interface LiquidGlassProps extends HTMLAttributes<HTMLDivElement> {
+  /** Optical preset. Individual props always override its values. Default: default. */
+  variant?: GlassVariant;
   /** canvas never creates a WebGL context; auto prefers WebGL, then Canvas 2D. */
   renderMode?: RefractionMode;
   /** Reports the actual renderer, including any fallback. */
@@ -41,6 +43,7 @@ export interface LiquidGlassProps extends HTMLAttributes<HTMLDivElement> {
 export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
   function LiquidGlass(
     {
+      variant: variantProp,
       opacity: opacityProp,
       borderOpacity: borderOpacityProp,
       tone: toneProp,
@@ -58,11 +61,13 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
   ) {
     const scene = useContext(GlassSceneContext);
     const defaults = useGlassDefaults();
-    // Explicit component props always win over provider and built-in defaults.
-    const opacity = opacityProp ?? defaults.opacity;
-    const borderOpacity = borderOpacityProp ?? defaults.borderOpacity;
+    // Component props > component variant > inherited provider defaults.
+    const variant = variantProp ?? defaults.variant;
+    const preset = variantProp === undefined ? defaults : glassVariantPresets[variantProp];
+    const opacity = opacityProp ?? preset.opacity;
+    const borderOpacity = borderOpacityProp ?? preset.borderOpacity;
     const tone = toneProp ?? defaults.tone;
-    const refraction = refractionProp ?? defaults.refraction;
+    const refraction = refractionProp ?? preset.refraction;
     const thickness = thicknessProp ?? defaults.thickness;
     const radius = radiusProp ?? defaults.radius;
     const renderMode = renderModeProp ?? defaults.renderMode;
@@ -130,12 +135,16 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
       const draw = () => {
         pending = 0;
         const values = opticalValues.current;
+        const computed = window.getComputedStyle(root);
+        // Match optical sampling to CSS custom properties set via className.
+        const cssThickness = Number.parseFloat(computed.getPropertyValue("--luma-thickness"));
+        const cssRadius = Number.parseFloat(computed.getPropertyValue("--luma-radius"));
         const frame = {
           scene: sceneRoot.getBoundingClientRect(),
           glass: root.getBoundingClientRect(),
           strength: clamp(values.refraction, 0, 60),
-          thickness: clamp(values.thickness, 0.5, 6),
-          radius: Math.max(0, values.radius),
+          thickness: clamp(Number.isFinite(cssThickness) ? cssThickness : values.thickness, 0.5, 6),
+          radius: Math.max(0, Number.isFinite(cssRadius) ? cssRadius : values.radius),
         };
         try {
           currentRenderer.draw(frame);
@@ -194,11 +203,17 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
       redrawRef.current?.();
     }, [refraction, thickness, radius, scene?.imageElement, renderMode]);
 
+    // Base variables are class-overridable. Explicit props write the active
+    // variable inline, taking priority over className.
     const variables = {
-      "--luma-opacity": clamp(opacity, 0, 1),
-      "--luma-border-opacity": clamp(borderOpacity, 0, 1),
-      "--luma-thickness": clamp(thickness, 0.5, 6) + "px",
-      "--luma-radius": Math.max(0, radius) + "px",
+      "--luma-opacity-base": clamp(opacity, 0, 1),
+      "--luma-border-opacity-base": clamp(borderOpacity, 0, 1),
+      "--luma-thickness-base": clamp(thickness, 0.5, 6) + "px",
+      "--luma-radius-base": Math.max(0, radius) + "px",
+      ...(opacityProp !== undefined ? { "--luma-opacity": clamp(opacity, 0, 1) } : {}),
+      ...(borderOpacityProp !== undefined ? { "--luma-border-opacity": clamp(borderOpacity, 0, 1) } : {}),
+      ...(thicknessProp !== undefined ? { "--luma-thickness": clamp(thickness, 0.5, 6) + "px" } : {}),
+      ...(radiusProp !== undefined ? { "--luma-radius": Math.max(0, radius) + "px" } : {}),
     } as CSSProperties;
 
     return (
@@ -206,6 +221,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
         {...rest}
         ref={setRootRef}
         data-tone={tone}
+        data-variant={variant}
         className={["luma-glass", className].filter(Boolean).join(" ")}
         style={{ ...variables, ...style }}
       >
