@@ -64,7 +64,7 @@ export function Example() {
       defaults={{
         opacity: 0.4,
         refraction: 23,
-        thickness: 1.8,
+        thickness: 0.5,
         radius: 28,
         renderMode: "canvas",
       }}
@@ -104,7 +104,7 @@ export function Hero() {
       <LiquidGlass
         opacity={0.4}
         refraction={23}
-        thickness={1.8}
+        thickness={0.5}
         radius={32}
         renderMode="canvas"
         style={{ position: "absolute", inset: "15% auto auto 10%", padding: 28 }}
@@ -123,7 +123,7 @@ export function Hero() {
 | --- | --- | --- | --- |
 | `opacity` | number | `0.4` | 0–1 |
 | `refraction` | number | `23` | 0–60 CSS-pixel displacement |
-| `thickness` | number | `1.8` | 0.5–6 CSS pixels |
+| `thickness` | number | `0.5` | 0.5–6 CSS pixels |
 | `radius` | number | `28` | CSS pixels |
 | `renderMode` | `"auto" \| "canvas" \| "webgl"` | `"auto"` | Canvas disables WebGL; other modes fall back to Canvas 2D if unavailable |
 | `onRendererChange` | `(mode: "none" \| "canvas" \| "webgl") => void` | — | Reports active engine |

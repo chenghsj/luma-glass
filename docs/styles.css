@@ -89,7 +89,7 @@ button,input{font:inherit}
 
 .luma-glass {
   --luma-opacity: .4;
-  --luma-thickness: 1.8px;
+  --luma-thickness: 0.5px;
   --luma-radius: 28px;
   --luma-top: calc(var(--luma-thickness) * .68);
   --luma-left: calc(var(--luma-thickness) * .76);

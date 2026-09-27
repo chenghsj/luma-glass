@@ -44,7 +44,7 @@ function App() {
     const [opacity, setOpacity] = (0, react_1.useState)(0.4);
     const [refraction, setRefraction] = (0, react_1.useState)(23);
     const [showOriginal, setShowOriginal] = (0, react_1.useState)(false);
-    const [thickness, setThickness] = (0, react_1.useState)(1.8);
+    const [thickness, setThickness] = (0, react_1.useState)(0.5);
     const [renderMode, setRenderMode] = (0, react_1.useState)("canvas");
     const [activeRenderer, setActiveRenderer] = (0, react_1.useState)("none");
     const glassRef = (0, react_1.useRef)(null);
@@ -123,7 +123,7 @@ function App() {
                                         } }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "None" }), (0, jsx_runtime_1.jsx)("span", { children: "Strong" })] }), (0, jsx_runtime_1.jsx)("p", { className: "control-hint", children: "Compare the Lower Layer card border behind the glass." })] }), (0, jsx_runtime_1.jsxs)("div", { className: "control", children: [(0, jsx_runtime_1.jsxs)("div", { className: "control-head", children: [(0, jsx_runtime_1.jsx)("label", { htmlFor: "thickness", children: "Optical edge thickness" }), (0, jsx_runtime_1.jsxs)("output", { htmlFor: "thickness", children: [thickness.toFixed(1), " px"] })] }), (0, jsx_runtime_1.jsx)("input", { id: "thickness", type: "range", min: "0.5", max: "6", step: "0.1", value: thickness, onChange: (event) => setThickness(Number(event.target.value)) }), (0, jsx_runtime_1.jsxs)("div", { className: "control-scale", children: [(0, jsx_runtime_1.jsx)("span", { children: "Thin" }), (0, jsx_runtime_1.jsx)("span", { children: "Thick" })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "controls-bottom", children: [(0, jsx_runtime_1.jsxs)("span", { className: "status", children: [(0, jsx_runtime_1.jsx)("i", {}), " ", showOriginal ? "Original background · refraction paused" : activeRenderer === "canvas" ? "Canvas 2D active · no WebGL" : activeRenderer === "webgl" ? "WebGL active" : "Image refraction unavailable"] }), (0, jsx_runtime_1.jsxs)("div", { className: "control-actions", children: [(0, jsx_runtime_1.jsxs)("label", { className: "render-picker", htmlFor: "render-mode", children: ["Renderer", (0, jsx_runtime_1.jsxs)("select", { id: "render-mode", value: renderMode, onChange: (event) => setRenderMode(event.target.value), children: [(0, jsx_runtime_1.jsx)("option", { value: "canvas", children: "Canvas 2D \u00B7 no WebGL" }), (0, jsx_runtime_1.jsx)("option", { value: "auto", children: "Auto \u00B7 WebGL \u2192 Canvas" }), (0, jsx_runtime_1.jsx)("option", { value: "webgl", children: "WebGL \u00B7 Canvas fallback" })] })] }), (0, jsx_runtime_1.jsx)("button", { type: "button", "aria-pressed": showOriginal, onClick: () => setShowOriginal((value) => !value), children: showOriginal ? "Show refraction" : "Show original" }), (0, jsx_runtime_1.jsx)("button", { type: "button", onClick: () => {
                                                     setOpacity(0.4);
                                                     setRefraction(23);
-                                                    setThickness(1.8);
+                                                    setThickness(0.5);
                                                     setShowOriginal(false);
                                                     dragRef.current = null;
                                                     glassRef.current?.classList.remove("is-dragging");
@@ -158,7 +158,7 @@ const react_1 = require("react");
 const builtInDefaults = {
     opacity: 0.4,
     refraction: 23,
-    thickness: 1.8,
+    thickness: 0.5,
     radius: 28,
     renderMode: "auto",
 };
