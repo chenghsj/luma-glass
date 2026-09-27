@@ -5,12 +5,14 @@
   const scene = byId("scene");
   const glass = byId("glass");
   const canvas = byId("refraction");
+  const cpuCanvas = byId("canvas-refraction");
+  const modeSelect = byId("render-mode");
   const opacity = byId("opacity");
   const refraction = byId("refraction-slider");
   const thickness = byId("thickness");
   const status = byId("render-status");
   const compare = byId("compare");
-  if (!scene || !glass || !canvas || !opacity || !refraction || !thickness) return;
+  if (!scene || !glass || !canvas || !cpuCanvas || !modeSelect || !opacity || !refraction || !thickness) return;
 
   const vertexSource = [
     "attribute vec2 a_position;",
@@ -45,6 +47,10 @@
   ].join("\n");
 
   let renderer = null;
+  let activeMode = "none";
+  let webglRenderer = null;
+  let canvasRenderer = null;
+  let webglUnavailable = false;
   let pending = 0;
   let showOriginal = false;
   function syncCompare() {
@@ -65,9 +71,24 @@
     pending = 0;
     updateControls();
     if (renderer) {
-      renderer.draw();
-      canvas.style.opacity = showOriginal || Number(refraction.value) === 0 ? "0" : "1";
-      setStatus(showOriginal ? "Original background · refraction paused" : "WebGL active · watch the contour lines");
+      try {
+        renderer.draw();
+        const visible = !showOriginal && Number(refraction.value) > 0;
+        canvas.style.opacity = visible && activeMode === "webgl" ? "1" : "0";
+        cpuCanvas.style.opacity = visible && activeMode === "canvas" ? "1" : "0";
+        setStatus(showOriginal ? "Original background · refraction paused"
+          : activeMode === "webgl" ? "WebGL active · watch the contour lines"
+          : modeSelect.value !== "canvas" && webglUnavailable
+            ? "Canvas 2D active · WebGL unavailable"
+            : "Canvas 2D active · WebGL not required");
+      } catch (error) {
+        console.warn("[luma-glass demo] Renderer failed:", error);
+        canvas.style.opacity = "0";
+        cpuCanvas.style.opacity = "0";
+        renderer = null;
+        compare.disabled = true;
+        setStatus("Refraction unavailable · CSS glass only");
+      }
     }
   }
   function schedule() {
@@ -79,6 +100,10 @@
   refraction.addEventListener("input", () => {
     showOriginal = false;
     syncCompare();
+    schedule();
+  });
+  modeSelect.addEventListener("change", () => {
+    chooseRenderer();
     schedule();
   });
   compare.addEventListener("click", () => {
@@ -194,27 +219,112 @@
     };
   }
 
+
+  function createCanvasRenderer(image) {
+    const ctx = cpuCanvas.getContext("2d");
+    const source = document.createElement("canvas");
+    const sourceCtx = source.getContext("2d", { willReadFrequently: true });
+    if (!ctx || !sourceCtx) throw new Error("Canvas 2D is unavailable");
+    let sourceWidth = 0, sourceHeight = 0, pixels = null, previous = "";
+    return {
+      draw() {
+        const s = scene.getBoundingClientRect();
+        const g = glass.getBoundingClientRect();
+        const strength = Number(refraction.value);
+        const edge = Number(thickness.value);
+        if (!s.width || !s.height || !g.width || !g.height) return;
+        if (strength <= 0) { cpuCanvas.style.opacity = "0"; return; }
+        const sw = Math.max(1, Math.round(s.width)), sh = Math.max(1, Math.round(s.height));
+        if (sw !== sourceWidth || sh !== sourceHeight) {
+          source.width = sw;
+          source.height = sh;
+          const scale = Math.max(sw / image.naturalWidth, sh / image.naturalHeight);
+          const w = image.naturalWidth * scale, h = image.naturalHeight * scale;
+          sourceCtx.clearRect(0, 0, sw, sh);
+          sourceCtx.drawImage(image, (sw - w) / 2, (sh - h) / 2, w, h);
+          pixels = sourceCtx.getImageData(0, 0, sw, sh).data;
+          sourceWidth = sw; sourceHeight = sh; previous = "";
+        }
+        if (!pixels) return;
+        const width = Math.max(1, Math.round(g.width));
+        const height = Math.max(1, Math.round(g.height));
+        const ox = g.left - s.left, oy = g.top - s.top;
+        const key = [width, height, ox, oy, strength, edge, sw, sh].join(":");
+        if (key === previous) return;
+        previous = key;
+        if (cpuCanvas.width !== width) cpuCanvas.width = width;
+        if (cpuCanvas.height !== height) cpuCanvas.height = height;
+        const result = ctx.createImageData(width, height), out = result.data;
+        const falloff = Math.max(42, Math.min(g.width, g.height) * 0.23) + edge * 0.8;
+        for (let y = 0; y < height; y++) {
+          const v = (y + 0.5) / height;
+          const fy = 0.07 + 0.93 * Math.exp(-Math.min(v, 1 - v) * g.height / falloff);
+          const dy = (v * 2 - 1) * fy * strength * 0.92;
+          for (let x = 0; x < width; x++) {
+            const u = (x + 0.5) / width;
+            const fx = 0.07 + 0.93 * Math.exp(-Math.min(u, 1 - u) * g.width / falloff);
+            const dx = (u * 2 - 1) * fx * strength * 0.92;
+            const sx = Math.min(sw - 1, Math.max(0, Math.round((ox + u * g.width + dx) * sw / s.width)));
+            const sy = Math.min(sh - 1, Math.max(0, Math.round((oy + v * g.height + dy) * sh / s.height)));
+            const from = (sy * sw + sx) * 4, to = (y * width + x) * 4;
+            out[to] = pixels[from];
+            out[to + 1] = pixels[from + 1];
+            out[to + 2] = pixels[from + 2];
+            out[to + 3] = pixels[from + 3];
+          }
+        }
+        ctx.putImageData(result, 0, 0);
+        cpuCanvas.style.opacity = "1";
+      },
+    };
+  }
+
+  function chooseRenderer() {
+    renderer = null;
+    activeMode = "none";
+    canvas.style.opacity = "0";
+    cpuCanvas.style.opacity = "0";
+    if (!image.naturalWidth || !image.naturalHeight) return;
+    // Selecting Canvas 2D never requests a WebGL context.
+    if (modeSelect.value !== "canvas" && !webglUnavailable && !webglRenderer) {
+      try {
+        webglRenderer = createRenderer(image);
+        if (!webglRenderer) webglUnavailable = true;
+      } catch (error) {
+        webglUnavailable = true;
+        console.warn("[luma-glass demo] WebGL fallback:", error);
+      }
+    }
+    if (modeSelect.value !== "canvas" && webglRenderer) {
+      renderer = webglRenderer;
+      activeMode = "webgl";
+    } else {
+      try {
+        if (!canvasRenderer) canvasRenderer = createCanvasRenderer(image);
+        renderer = canvasRenderer;
+        activeMode = "canvas";
+      } catch (error) {
+        console.warn("[luma-glass demo] Canvas fallback unavailable:", error);
+      }
+    }
+    compare.disabled = !renderer;
+    if (!renderer) setStatus("Refraction unavailable · CSS glass only");
+    else setStatus(activeMode === "webgl" ? "WebGL active · watch the contour lines"
+      : webglUnavailable && modeSelect.value !== "canvas" ? "Canvas 2D active · WebGL unavailable"
+      : "Canvas 2D active · WebGL not required");
+  }
+
   const image = new Image();
   image.decoding = "async";
   image.onload = () => {
-    try {
-      renderer = createRenderer(image);
-      compare.disabled = !renderer;
-      if (!renderer) setStatus("WebGL unavailable · CSS glass fallback");
-      else setStatus("WebGL active · watch the contour lines");
-    } catch (error) {
-      renderer = null;
-      compare.disabled = true;
-      console.warn("[luma-glass demo] WebGL fallback:", error);
-      setStatus("WebGL unavailable · CSS glass fallback");
-    }
+    chooseRenderer();
     schedule();
   };
   image.onerror = () => {
     compare.disabled = true;
-    setStatus("Image unavailable · CSS glass fallback");
+    setStatus("Image unavailable · CSS glass only");
   };
-  image.src = "./scene.svg?v=2";
+  image.src = "./scene.svg?v=3";
 
   if ("ResizeObserver" in window) {
     const observer = new ResizeObserver(schedule);

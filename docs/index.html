@@ -6,8 +6,8 @@
   <meta name="description" content="Luma Glass — adjustable optical glass demo without a build step." />
   <meta name="theme-color" content="#f1f2f7" />
   <title>Luma Glass — Interactive demo</title>
-  <link rel="stylesheet" href="./styles.css?v=2" />
-  <script src="./demo.js?v=2" defer></script>
+  <link rel="stylesheet" href="./styles.css?v=3" />
+  <script src="./demo.js?v=3" defer></script>
 </head>
 <body>
   <div class="page">
@@ -28,6 +28,7 @@
       <div id="scene" class="luma-scene demo-stage" style="background-color:#b6b4e8;background-image:url('./scene.svg?v=2');background-position:center;background-repeat:no-repeat;background-size:cover">
         <div id="glass" class="luma-glass demo-glass" style="--luma-opacity:.4;--luma-thickness:1.8px;--luma-radius:40px">
           <canvas id="refraction" class="luma-glass__refraction" aria-hidden="true"></canvas>
+          <canvas id="canvas-refraction" class="luma-glass__refraction" aria-hidden="true"></canvas>
           <span class="luma-glass__surface" aria-hidden="true"></span>
           <span class="luma-glass__shell" aria-hidden="true"></span>
           <span class="luma-glass__contact" aria-hidden="true"></span>
@@ -63,12 +64,19 @@
         <div class="controls-bottom">
           <span id="render-status" class="status" role="status"><i></i> Loading refraction…</span>
           <div class="control-actions">
+            <label class="render-picker" for="render-mode">Renderer
+              <select id="render-mode" aria-label="Refraction renderer">
+                <option value="canvas" selected>Canvas 2D · no WebGL</option>
+                <option value="auto">Auto · WebGL → Canvas</option>
+                <option value="webgl">WebGL · Canvas fallback</option>
+              </select>
+            </label>
             <button id="compare" type="button" aria-pressed="false" disabled>Show original</button>
             <button id="reset" type="button">↺ &nbsp; Reset</button>
           </div>
         </div>
       </section>
-      <p class="footnote">This static Pages demo mirrors the library's image-backed shader. It does not capture arbitrary DOM behind the glass.</p>
+      <p class="footnote">This demo supports Canvas 2D without WebGL. It refracts the known background image, not arbitrary DOM behind the glass.</p>
     </main>
   </div>
 </body>
