@@ -8,27 +8,29 @@ const files = [
   "src/index.ts",
   "src/lib/GlassProvider.tsx",
   "src/lib/LiquidGlass.tsx",
+  "src/lib/worker-client.ts",
   "src/lib/displacement.ts",
   "src/lib/support.ts",
   "src/lib/optics.ts",
 ];
 
-const compiled = [];
-for (const file of files) {
-  const source = (await readFile(file, "utf8"))
+const compilerOptions = {
+  target: ts.ScriptTarget.ES2020,
+  module: ts.ModuleKind.CommonJS,
+  jsx: ts.JsxEmit.ReactJSX,
+  removeComments: true,
+  sourceMap: false,
+  esModuleInterop: true,
+};
+
+async function compileModule(file, transform = (source) => source) {
+  const source = transform((await readFile(file, "utf8"))
     .replaceAll("import.meta.env.BASE_URL", JSON.stringify("/luma-glass/"))
-    .replaceAll("import.meta.env.DEV", "false");
+    .replaceAll("import.meta.env.DEV", "false"));
   const result = ts.transpileModule(source, {
     fileName: file,
     reportDiagnostics: true,
-    compilerOptions: {
-      target: ts.ScriptTarget.ES2020,
-      module: ts.ModuleKind.CommonJS,
-      jsx: ts.JsxEmit.ReactJSX,
-      removeComments: true,
-      sourceMap: false,
-      esModuleInterop: true,
-    },
+    compilerOptions,
   });
   const errors = (result.diagnostics ?? [])
     .filter(({ category }) => category === ts.DiagnosticCategory.Error);
@@ -37,12 +39,32 @@ for (const file of files) {
       (d) => ts.flattenDiagnosticMessageText(d.messageText, " "),
     ).join("; "));
   }
-  compiled.push(
-    "  modules[" + JSON.stringify(file) +
+  return "  modules[" + JSON.stringify(file) +
     "] = function(require, module, exports) {\n" +
-    result.outputText + "\n  };\n",
-  );
+    result.outputText + "\n  };\n";
 }
+
+// A separate self-contained worker bundle runs without browser-side imports.
+const workerFiles = [
+  "src/lib/displacement.worker.ts",
+  "src/lib/displacement.ts",
+  "src/lib/optics.ts",
+];
+const workerTemplate = await readFile("scripts/pages-worker.template.js", "utf8");
+const workerModules = await Promise.all(workerFiles.map((file) => compileModule(file)));
+const workerBundle = workerTemplate.replace(
+  "/*__WORKER_COMPILED_MODULES__*/", workerModules.join("\n"),
+);
+const workerVersion = createHash("sha256").update(workerBundle).digest("hex").slice(0, 12);
+const workerUrl = JSON.stringify("/luma-glass/worker.js?v=" + workerVersion);
+
+const compiled = await Promise.all(files.map((file) => compileModule(
+  file,
+  (source) => source.replaceAll(
+    'new URL("./displacement.worker.ts", import.meta.url)',
+    workerUrl,
+  ),
+)));
 
 const template = await readFile("scripts/pages-runtime.template.js", "utf8");
 const marker = "/*__COMPILED_MODULES__*/";
@@ -50,6 +72,7 @@ if (!template.includes(marker)) throw new Error("Pages runtime template is missi
 const bundle = template.replace(marker, compiled.join("\n"));
 await mkdir("docs/vendor", { recursive: true });
 await writeFile("docs/app.js", bundle);
+await writeFile("docs/worker.js", workerBundle);
 
 for (const name of ["react", "react-dom"]) {
   const file = name + ".production.min.js";
@@ -84,6 +107,7 @@ if (!indexTemplate.includes(versionMarker)) {
 }
 const assetVersion = createHash("sha256")
   .update(bundle)
+  .update(workerBundle)
   .update(styles)
   .digest("hex")
   .slice(0, 12);

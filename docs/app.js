@@ -192,7 +192,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const React = require("react");
 const { useGlassDefaults } = require("./GlassProvider");
 const { clamp } = require("./optics");
-const { createDisplacementMap } = require("./displacement");
+const { generateDisplacementMap, releaseDisplacementMap } = require("./worker-client");
 const { isBackdropRefractionSupported } = require("./support");
 const h = React.createElement;
 exports.LiquidGlass = React.forwardRef(function LiquidGlass({
@@ -212,6 +212,9 @@ exports.LiquidGlass = React.forwardRef(function LiquidGlass({
   callbackRef.current = onSupportChange;
   const [supported, setSupported] = React.useState(false);
   const [map, setMap] = React.useState(null);
+  const opticalValues = React.useRef({ refraction, thickness, radius });
+  opticalValues.current = { refraction, thickness, radius };
+  const scheduleRef = React.useRef(null);
   const filterId = "luma-filter-" + React.useId().replace(/:/g, "");
   const setRootRef = React.useCallback((element) => {
     rootRef.current = element;
@@ -225,39 +228,87 @@ exports.LiquidGlass = React.forwardRef(function LiquidGlass({
   }, []);
   React.useEffect(() => {
     const root = rootRef.current;
-    if (!root || !supported) { setMap(null); return; }
-    let pending = 0;
+    if (!root || !supported) {
+      setMap(null);
+      return;
+    }
+    let disposed = false;
+    let pendingFrame = 0;
     let lastKey = "";
+    let inFlight = false;
+    let queued = null;
+    const process = (work) => {
+      inFlight = true;
+      void generateDisplacementMap(work.params).then((next) => {
+        if (disposed || work.key !== lastKey) {
+          releaseDisplacementMap(next);
+        } else {
+          setMap(next);
+        }
+      }).catch((error) => {
+        if (!disposed && work.key === lastKey) setMap(null);
+      }).finally(() => {
+        inFlight = false;
+        const next = queued;
+        queued = null;
+        if (!disposed && next && next.key === lastKey) process(next);
+      });
+    };
     const regenerate = () => {
-      pending = 0;
+      pendingFrame = 0;
       const bounds = root.getBoundingClientRect();
       const css = window.getComputedStyle(root);
-      const rawStrength = Number.parseFloat(css.getPropertyValue("--luma-refraction"));
-      const rawEdge = Number.parseFloat(css.getPropertyValue("--luma-thickness"));
-      const rawCorners = Number.parseFloat(css.getPropertyValue("--luma-radius"));
-      const strength = clamp(Number.isFinite(rawStrength) ? rawStrength : refraction, 0, 60);
-      const edge = clamp(Number.isFinite(rawEdge) ? rawEdge : thickness, 0.5, 6);
-      const corners = Math.max(0, Number.isFinite(rawCorners) ? rawCorners : radius);
-      const width = Math.max(0, bounds.width);
-      const height = Math.max(0, bounds.height);
-      const key = [width, height, strength, edge, corners].join(":");
-      if (lastKey === key) return;
+      const { refraction, thickness, radius } = opticalValues.current;
+      const cssRefraction = Number.parseFloat(css.getPropertyValue("--luma-refraction"));
+      const cssThickness = Number.parseFloat(css.getPropertyValue("--luma-thickness"));
+      const cssRadius = Number.parseFloat(css.getPropertyValue("--luma-radius"));
+      const strength = clamp(Number.isFinite(cssRefraction) ? cssRefraction : refraction, 0, 60);
+      const edge = clamp(Number.isFinite(cssThickness) ? cssThickness : thickness, 0.5, 6);
+      const corners = Math.max(0, Number.isFinite(cssRadius) ? cssRadius : radius);
+      const params = {
+        width: Math.max(0, bounds.width),
+        height: Math.max(0, bounds.height),
+        radius: corners,
+        refraction: strength,
+        thickness: edge,
+        devicePixelRatio: window.devicePixelRatio || 1
+      };
+      const key = Object.values(params).join(":");
+      if (key === lastKey) return;
       lastKey = key;
-      try { setMap(createDisplacementMap(width, height, corners, strength, edge)); }
-      catch (error) { console.warn("[luma-glass] Displacement map unavailable:", error); setMap(null); }
+      if (params.width <= 0 || params.height <= 0 || params.refraction <= 0) {
+        queued = null;
+        setMap(null);
+        return;
+      }
+      const work = { key, params };
+      if (inFlight) queued = work;
+      else process(work);
     };
-    const schedule = () => { if (!pending) pending = window.requestAnimationFrame(regenerate); };
+    const schedule = () => {
+      if (!pendingFrame) pendingFrame = window.requestAnimationFrame(regenerate);
+    };
+    scheduleRef.current = schedule;
     const resize = new ResizeObserver(schedule);
     resize.observe(root);
     const attributes = new MutationObserver(schedule);
     attributes.observe(root, { attributes: true, attributeFilter: ["class", "style"] });
+    window.addEventListener("resize", schedule);
     schedule();
     return () => {
-      if (pending) window.cancelAnimationFrame(pending);
+      disposed = true;
+      queued = null;
+      if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
       resize.disconnect();
       attributes.disconnect();
+      window.removeEventListener("resize", schedule);
+      scheduleRef.current = null;
     };
-  }, [supported, refraction, thickness, radius]);
+  }, [supported]);
+  React.useEffect(() => {
+    scheduleRef.current?.();
+  }, [refraction, thickness, radius]);
+  React.useEffect(() => () => releaseDisplacementMap(map), [map]);
   const variables = {
     "--luma-opacity-base": clamp(opacity, 0, 1),
     "--luma-border-opacity-base": clamp(borderOpacity, 0, 1),
@@ -355,6 +406,7 @@ function getLensOffset(
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createDisplacementMap = createDisplacementMap;
+exports.paintDisplacementMap = paintDisplacementMap;
 exports.getMapDimensions = getMapDimensions;
 exports.getDisplacementScale = getDisplacementScale;
 const { clamp, getLensOffset } = require("./optics");
@@ -369,16 +421,10 @@ function getMapDimensions(width, height, devicePixelRatio = 1) {
 function getDisplacementScale(refraction) {
   return Math.max(2, Math.ceil(clamp(refraction, 0, 60) * 0.82 * 2.1));
 }
-function createDisplacementMap(width, height, radius, refraction, thickness) {
-  if (width <= 0 || height <= 0 || refraction <= 0) return null;
-  const { width: mapWidth, height: mapHeight } = getMapDimensions(
-    width, height, typeof window === "undefined" ? 1 : window.devicePixelRatio
-  );
-  const canvas = document.createElement("canvas");
-  canvas.width = mapWidth;
-  canvas.height = mapHeight;
-  const context = canvas.getContext("2d");
-  if (!context) return null;
+function paintDisplacementMap(context, { width, height, radius, refraction, thickness, devicePixelRatio }) {
+  if (!Number.isFinite(width) || !Number.isFinite(height) ||
+      width <= 0 || height <= 0 || refraction <= 0) return null;
+  const { width: mapWidth, height: mapHeight } = getMapDimensions(width, height, devicePixelRatio);
   const image = context.createImageData(mapWidth, mapHeight);
   const pixels = image.data;
   const offset = { x: 0, y: 0 };
@@ -398,7 +444,102 @@ function createDisplacementMap(width, height, radius, refraction, thickness) {
     }
   }
   context.putImageData(image, 0, 0);
-  return { url: canvas.toDataURL("image/png"), width, height, scale };
+  return { width, height, scale };
+}
+function createDisplacementMap(width, height, radius, refraction, thickness,
+  devicePixelRatio = typeof window === "undefined" ? 1 : window.devicePixelRatio) {
+  if (!Number.isFinite(width) || !Number.isFinite(height) ||
+      width <= 0 || height <= 0 || refraction <= 0) return null;
+  const dims = getMapDimensions(width, height, devicePixelRatio);
+  const canvas = document.createElement("canvas");
+  canvas.width = dims.width;
+  canvas.height = dims.height;
+  const context = canvas.getContext("2d");
+  if (!context) return null;
+  const frame = paintDisplacementMap(context, {
+    width, height, radius, refraction, thickness, devicePixelRatio
+  });
+  return frame ? { url: canvas.toDataURL("image/png"), ...frame } : null;
+}
+  };
+
+  modules["src/lib/worker-client.ts"] = function(require, module, exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateDisplacementMap = generateDisplacementMap;
+exports.releaseDisplacementMap = releaseDisplacementMap;
+const { createDisplacementMap } = require("./displacement");
+let sharedWorker = null;
+let workerUnavailable = false;
+let nextRequestId = 0;
+const pending = new Map();
+function disableWorker(error) {
+  workerUnavailable = true;
+  sharedWorker?.terminate();
+  sharedWorker = null;
+  for (const request of pending.values()) request.reject(error);
+  pending.clear();
+}
+function getWorker() {
+  if (workerUnavailable ||
+      typeof Worker === "undefined" ||
+      typeof OffscreenCanvas === "undefined" ||
+      typeof URL.createObjectURL !== "function") return null;
+  if (sharedWorker) return sharedWorker;
+  try {
+    const worker = new Worker("/luma-glass/worker.js?v=worker-offscreen-20260928", { type: "module" });
+    worker.onmessage = ({ data }) => {
+      const request = pending.get(data.id);
+      if (!request) return;
+      pending.delete(data.id);
+      if (data.error) {
+        const error = new Error(data.error);
+        request.reject(error);
+        disableWorker(error);
+      } else {
+        request.resolve(data.result ?? null);
+      }
+    };
+    worker.onerror = () => disableWorker(new Error("Displacement worker failed"));
+    worker.onmessageerror = () => disableWorker(new Error("Displacement worker message failed"));
+    sharedWorker = worker;
+    return worker;
+  } catch {
+    workerUnavailable = true;
+    return null;
+  }
+}
+async function generateDisplacementMap(params) {
+  if (params.width <= 0 || params.height <= 0 || params.refraction <= 0) return null;
+  const fallback = () => createDisplacementMap(
+    params.width, params.height, params.radius, params.refraction,
+    params.thickness, params.devicePixelRatio
+  );
+  const worker = getWorker();
+  if (!worker) return fallback();
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const id = ++nextRequestId;
+      pending.set(id, { resolve, reject });
+      try {
+        worker.postMessage({ id, params });
+      } catch (error) {
+        pending.delete(id);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+    if (!result) return null;
+    return {
+      url: URL.createObjectURL(result.blob),
+      width: result.width, height: result.height, scale: result.scale,
+      objectUrl: true
+    };
+  } catch (error) {
+    return fallback();
+  }
+}
+function releaseDisplacementMap(map) {
+  if (map?.objectUrl) URL.revokeObjectURL(map.url);
 }
   };
 

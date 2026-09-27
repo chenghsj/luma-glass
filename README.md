@@ -75,7 +75,7 @@ import { GlassProvider, LiquidGlass } from "@chenghsj/luma-glass";
 
 ## Browser support
 
-As of September 2026, Luma Glass generates a displacement texture with Canvas and uses SVG `feDisplacementMap` through CSS `backdrop-filter` to refract the browser's composited backdrop. Canvas does **not** sample or screenshot the DOM.
+As of September 2026, Luma Glass generates a displacement texture in a shared Web Worker using `OffscreenCanvas` and uses SVG `feDisplacementMap` through CSS `backdrop-filter` to refract the browser's composited backdrop. Canvas does **not** sample or screenshot the DOM.
 
 | Browser engine | DOM refraction | Glass surface and border |
 | --- | --- | --- |
@@ -86,6 +86,12 @@ As of September 2026, Luma Glass generates a displacement texture with Canvas an
 The demo shows **supported / not supported**. Detection uses the browser engine and `CSS.supports`; it is a conservative capability estimate, not a pixel-level rendering test. Some browsers accept `backdrop-filter: url(#filter)` but do not render the SVG graph. There is no legacy image, WebGL, or screenshot-based refraction fallback. On unsupported browsers the glass surface remains visible without displacement.
 
 References: [WebKit SVG backdrop-filter issue](https://bugs.webkit.org/show_bug.cgi?id=245510) · [Mozilla feature request](https://connect.mozilla.org/t5/ideas/support-svg-filters-in-backdrop-filter-for-advanced-glass/idi-p/98458)
+
+## Performance
+
+Displacement maps are generated in **one shared, lazily created Web Worker** using `OffscreenCanvas.convertToBlob()`. Browser DOM measurement and SVG updates remain on the main thread; backdrop compositing still belongs to the browser. Each glass permits one request in flight and keeps only its latest queued settings, so rapid slider changes cannot create an unbounded worker backlog. Blob URLs are revoked when maps are replaced or the component unmounts.
+
+If Web Workers or `OffscreenCanvas` are unavailable—or the worker fails—the same displacement algorithm runs on the main thread. This is a **map-generation fallback**, not a return to the old image-only refraction renderer. Dragging a fixed-size glass does not regenerate its map.
 
 ## Tailwind & CVA
 

@@ -10,7 +10,8 @@ import {
 } from "react";
 import { useGlassDefaults } from "./GlassProvider";
 import { clamp } from "./optics";
-import { createDisplacementMap, type DisplacementMap } from "./displacement";
+import type { DisplacementMap, DisplacementParams } from "./displacement";
+import { generateDisplacementMap, releaseDisplacementMap } from "./worker-client";
 import { isBackdropRefractionSupported } from "./support";
 
 export interface LiquidGlassProps extends HTMLAttributes<HTMLDivElement> {
@@ -59,6 +60,9 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
     callbackRef.current = onSupportChange;
     const [supported, setSupported] = useState(false);
     const [map, setMap] = useState<DisplacementMap | null>(null);
+    const opticalValues = useRef({ refraction, thickness, radius });
+    opticalValues.current = { refraction, thickness, radius };
+    const scheduleRef = useRef<(() => void) | null>(null);
     const filterId = `luma-filter-` + useId().replace(/:/g, "");
 
     const setRootRef = useCallback(
@@ -83,45 +87,95 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(
         return;
       }
 
-      let pending = 0;
+      let disposed = false;
+      let pendingFrame = 0;
       let lastKey = "";
+      let inFlight = false;
+      type Work = { key: string; params: DisplacementParams };
+      let queued: Work | null = null;
+
+      // Only one request per glass is in flight. Slider changes replace the
+      // queued request instead of building a long worker message backlog.
+      const process = (work: Work) => {
+        inFlight = true;
+        void generateDisplacementMap(work.params).then((next) => {
+          if (disposed || work.key !== lastKey) {
+            releaseDisplacementMap(next);
+          } else {
+            setMap(next);
+          }
+        }).catch((error) => {
+          if (import.meta.env.DEV) console.warn("[luma-glass] Map generation failed:", error);
+          if (!disposed && work.key === lastKey) setMap(null);
+        }).finally(() => {
+          inFlight = false;
+          const next = queued;
+          queued = null;
+          if (!disposed && next && next.key === lastKey) process(next);
+        });
+      };
+
       const regenerate = () => {
-        pending = 0;
+        pendingFrame = 0;
         const bounds = root.getBoundingClientRect();
         const css = window.getComputedStyle(root);
+        const { refraction, thickness, radius } = opticalValues.current;
         const cssRefraction = Number.parseFloat(css.getPropertyValue("--luma-refraction"));
         const cssThickness = Number.parseFloat(css.getPropertyValue("--luma-thickness"));
         const cssRadius = Number.parseFloat(css.getPropertyValue("--luma-radius"));
         const strength = clamp(Number.isFinite(cssRefraction) ? cssRefraction : refraction, 0, 60);
         const edge = clamp(Number.isFinite(cssThickness) ? cssThickness : thickness, 0.5, 6);
         const corners = Math.max(0, Number.isFinite(cssRadius) ? cssRadius : radius);
-        const width = Math.max(0, bounds.width);
-        const height = Math.max(0, bounds.height);
-        const key = [width, height, strength, edge, corners].join(":");
-        if (lastKey === key) return;
+        const params: DisplacementParams = {
+          width: Math.max(0, bounds.width),
+          height: Math.max(0, bounds.height),
+          radius: corners,
+          refraction: strength,
+          thickness: edge,
+          devicePixelRatio: window.devicePixelRatio || 1,
+        };
+        const key = Object.values(params).join(":");
+        if (key === lastKey) return;
         lastKey = key;
-        try {
-          setMap(createDisplacementMap(width, height, corners, strength, edge));
-        } catch (error) {
-          if (import.meta.env.DEV) console.warn("[luma-glass] Displacement map unavailable:", error);
+        if (params.width <= 0 || params.height <= 0 || params.refraction <= 0) {
+          queued = null;
           setMap(null);
+          return;
         }
+
+        const work = { key, params };
+        if (inFlight) queued = work;
+        else process(work);
       };
+
       const schedule = () => {
-        if (!pending) pending = window.requestAnimationFrame(regenerate);
+        if (!pendingFrame) pendingFrame = window.requestAnimationFrame(regenerate);
       };
+      scheduleRef.current = schedule;
       const resize = new ResizeObserver(schedule);
       resize.observe(root);
       const attributes = new MutationObserver(schedule);
       attributes.observe(root, { attributes: true, attributeFilter: ["class", "style"] });
+      window.addEventListener("resize", schedule);
       schedule();
 
       return () => {
-        if (pending) window.cancelAnimationFrame(pending);
+        disposed = true;
+        queued = null;
+        if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
         resize.disconnect();
         attributes.disconnect();
+        window.removeEventListener("resize", schedule);
+        scheduleRef.current = null;
       };
-    }, [supported, refraction, thickness, radius]);
+    }, [supported]);
+
+    useEffect(() => {
+      scheduleRef.current?.();
+    }, [refraction, thickness, radius]);
+
+    // Keep blob URLs alive until their map is replaced or the glass unmounts.
+    useEffect(() => () => releaseDisplacementMap(map), [map]);
 
     const variables = {
       "--luma-opacity-base": clamp(opacity, 0, 1),
