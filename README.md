@@ -4,6 +4,18 @@ A small React + TypeScript library for fixed-shape optical glass. Adjust the mil
 
 **Status:** first working prototype. The WebGL renderer supports a background image managed by `GlassScene`. Arbitrary DOM behind the glass gets the CSS surface and edge, **not** pixel-perfect refraction. The package is not published to npm yet.
 
+## GitHub Pages demo
+
+When GitHub Pages is enabled for this repository, the interactive playground is published at **https://chenghsj.github.io/luma-glass/**. The demo uses the Vite `/luma-glass/` base path, including its sample background image.
+
+1. Open the repository's **Settings → Pages** page.
+2. Under **Build and deployment → Source**, select **GitHub Actions**.
+3. Run the **Deploy demo to GitHub Pages** workflow under Actions if it has not already run successfully. Later pushes to `main` deploy automatically.
+
+For a local deployment build, run `npm run build:demo`. This writes `dist-demo/`, separately from the npm library build in `dist/`. To preview the Pages build locally, run `npm run preview:demo` and open the local URL ending in `/luma-glass/`.
+
+**Repository visibility:** the repository is currently private. GitHub Free only supports Pages from public repositories; GitHub Pro and supported organizational plans can publish Pages from private repositories. A private source repository does not make the deployed site private by default. Do not add sensitive content to the demo.
+
 ## Run the playground
 
 ```bash

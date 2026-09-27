@@ -4,8 +4,12 @@
   "description": "Adjustable optical glass components for React",
   "type": "module",
   "license": "MIT",
-  "files": ["dist"],
-  "sideEffects": ["./dist/style.css"],
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "./dist/style.css"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,7 +26,9 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build && tsc -p tsconfig.build.json",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:demo": "vite build --mode pages",
+    "preview:demo": "vite preview --mode pages --outDir dist-demo"
   },
   "peerDependencies": {
     "react": "^18.2.0 || ^19.0.0",

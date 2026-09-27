@@ -2,10 +2,11 @@ import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
+  base: mode === "pages" ? "/luma-glass/" : "/",
   plugins: [react()],
   build:
-    command === "build"
+    command === "build" && mode !== "pages"
       ? {
           lib: {
             entry: resolve(process.cwd(), "src/index.ts"),
@@ -17,5 +18,5 @@ export default defineConfig(({ command }) => ({
             external: ["react", "react-dom", "react/jsx-runtime"],
           },
         }
-      : undefined,
+      : { outDir: "dist-demo" },
 }));

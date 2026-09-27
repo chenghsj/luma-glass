@@ -33,7 +33,7 @@ export function App() {
           </p>
         </div>
 
-        <GlassScene image="/scene.svg" className="demo-stage">
+        <GlassScene image={`${import.meta.env.BASE_URL}scene.svg`} className="demo-stage">
           <LiquidGlass
             className="demo-glass"
             radius={40}
