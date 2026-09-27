@@ -138,12 +138,9 @@ export function App() {
               <div className="glass-pill">LIVE REFRACTION <span aria-hidden="true">↗</span></div>
             </div>
             </LiquidGlass>
-            <LiquidGlass className="demo-shared-chip">
-              <span>SHARED DEFAULTS</span>
-            </LiquidGlass>
-            <div className="scene-label">DRAG ↕ ↔ <span>·</span> NO OUTER BLUR</div>
           </GlassScene>
         </GlassProvider>
+        <p className="demo-drag-hint">Drag the glass to explore refraction.</p>
 
         <section className="controls" aria-label="Glass appearance controls">
           <div className="control">
@@ -211,9 +208,8 @@ export function App() {
           </div>
         </section>
         <p className="footnote">
-          Drag the glass across the entire SVG background, even partly past its edges.
-          Refraction samples the scene image, not arbitrary DOM beneath it. Use a same-origin
-          or CORS-enabled image in your own scene.
+          Refraction samples the scene image, not arbitrary DOM beneath it.
+          Use a same-origin or CORS-enabled image in your own scene.
         </p>
       </main>
     </div>

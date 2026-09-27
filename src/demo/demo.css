@@ -20,7 +20,7 @@ button,input{font:inherit}
 .heading p{font-size:14px;line-height:1.6;color:#72809b;margin:0 auto;max-width:530px}
 .demo-stage{width:100%;aspect-ratio:760/470;max-height:590px;border-radius:21px;box-shadow:0 12px 42px #565a8b17}
 .demo-glass{position:absolute;left:16.6%;top:17.6%;width:63.5%;height:65.1%;cursor:grab;touch-action:none}
-.demo-stage > .demo-glass,.demo-stage > .demo-shared-chip{position:absolute}
+.demo-stage > .demo-glass{position:absolute}
 .demo-glass.is-dragging{cursor:grabbing;z-index:2}
 .demo-glass .glass-inner{-webkit-user-select:none;user-select:none}
 .glass-inner{height:100%;padding:clamp(18px,3.7vw,41px);display:flex;flex-direction:column;align-items:flex-start;color:#33415f}
@@ -31,8 +31,7 @@ button,input{font:inherit}
 .glass-description{font-weight:550;font-size:clamp(10px,1.35vw,13px);color:#4b5879}
 .glass-pill{margin-top:18px;border:1px solid #ffffffc7;background:#ffffffa0;color:#3e4c6b;display:flex;gap:20px;align-items:center;border-radius:30px;padding:9px 13px;font-size:10px;font-weight:800;letter-spacing:.7px}
 .glass-pill span{font-size:14px}
-.scene-label{position:absolute;right:17px;top:17px;padding:9px 13px;border:1px solid #ffffff9e;border-radius:30px;background:#ffffff83;backdrop-filter:blur(10px);font-size:9px;font-weight:800;letter-spacing:.85px;color:#495978}
-.scene-label span{margin:0 5px}
+.demo-drag-hint{margin:12px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#7a869c}
 .controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:36px;row-gap:25px;padding:29px 35px 22px;margin-top:20px;border-radius:19px;background:#fff;border:1px solid #edf0f5;box-shadow:0 5px 20px #515b8010}
 .control-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:13px;font-size:12px;font-weight:750}
 .control-head output{color:#7884a0;font-size:11px;font-variant-numeric:tabular-nums}
@@ -50,7 +49,7 @@ button,input{font:inherit}
   .demo-stage{border-radius:15px;min-height:310px}
   .demo-glass{left:11%;top:17%;width:70%;height:65%}
   .glass-inner{padding:20px 17px}.glass-title{font-size:clamp(39px,9vw,63px)}
-  .glass-pill{display:none}.scene-label{top:10px;right:10px;font-size:8px;padding:7px 9px}
+  .glass-pill{display:none}.demo-drag-hint{font-size:11px}
   .controls{grid-template-columns:1fr;gap:27px;padding:23px 21px}
   .controls-bottom{grid-column:1}.status{font-size:10px}
 }
@@ -77,9 +76,3 @@ button,input{font:inherit}
 @media(max-width:780px){.controls-bottom{flex-wrap:wrap}.control-actions{flex-wrap:wrap;justify-content:flex-end;width:100%}.render-picker{margin-right:auto}}
 @media(max-width:420px){.render-picker{width:100%;justify-content:space-between}.render-picker select{max-width:70%}}
 
-/* Both LiquidGlass instances inherit opacity, refraction, thickness and renderer
-   from one GlassProvider above their GlassScene. */
-.demo-shared-chip{position:absolute;left:2.5%;top:4%;width:max-content;max-width:45%;min-height:34px}
-.demo-shared-chip .luma-glass__content{display:flex;align-items:center;padding:9px 13px}
-.demo-shared-chip .luma-glass__content>span{font-size:9px;font-weight:800;letter-spacing:1.2px;color:#4d5b81;white-space:nowrap}
-@media(max-width:680px){.demo-shared-chip{left:3%;top:3%;min-height:29px}.demo-shared-chip .luma-glass__content{padding:7px 9px}.demo-shared-chip .luma-glass__content>span{font-size:8px;letter-spacing:.7px}}
