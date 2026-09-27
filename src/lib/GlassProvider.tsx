@@ -20,7 +20,7 @@ export interface GlassProviderProps {
 
 const builtInDefaults: Required<GlassDefaults> = {
   opacity: 0.4,
-  borderOpacity: 0.42,
+  borderOpacity: 0.1,
   tone: "light",
   refraction: 23,
   thickness: 0.5,

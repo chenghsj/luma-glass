@@ -26,7 +26,7 @@ export interface LiquidGlassProps extends HTMLAttributes<HTMLDivElement> {
   onRendererChange?: (renderer: ActiveRenderer) => void;
   /** Glass surface opacity, from 0 to 1. Default: 0.4. */
   opacity?: number;
-  /** Independent opacity for the optical rim and highlights, 0 to 1. Default: 0.42. */
+  /** Independent opacity for the optical rim and highlights, 0 to 1. Default: 0.1. */
   borderOpacity?: number;
   /** Glass tint; dark matches a low-light system-glass look. Default: light. */
   tone?: "light" | "dark";
