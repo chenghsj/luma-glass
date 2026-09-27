@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Luma Glass — adjustable optical glass demo without a build step." />
+  <meta name="theme-color" content="#f1f2f7" />
+  <title>Luma Glass — Interactive demo</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./demo.js" defer></script>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Luma Glass demo home">
+        <span class="brand-symbol">✳</span><span>LUMA GLASS</span>
+      </a>
+      <a class="github-link" href="https://github.com/chenghsj/luma-glass" target="_blank" rel="noreferrer">
+        GitHub <span aria-hidden="true">↗</span>
+      </a>
+    </header>
+    <main class="main">
+      <div class="heading">
+        <span class="eyebrow">REACT + TYPESCRIPT · OPTICAL UI</span>
+        <h1>Light becomes an interface.</h1>
+        <p>A fixed glass silhouette with adjustable refraction, translucency, and optical edge thickness.</p>
+      </div>
+      <div id="scene" class="luma-scene demo-stage" style="background-color:#b6b4e8;background-image:url('./scene.svg');background-position:center;background-repeat:no-repeat;background-size:cover">
+        <div id="glass" class="luma-glass demo-glass" style="--luma-opacity:.4;--luma-thickness:1.8px;--luma-radius:40px">
+          <canvas id="refraction" class="luma-glass__refraction" aria-hidden="true"></canvas>
+          <span class="luma-glass__surface" aria-hidden="true"></span>
+          <span class="luma-glass__shell" aria-hidden="true"></span>
+          <span class="luma-glass__contact" aria-hidden="true"></span>
+          <span class="luma-glass__highlight" aria-hidden="true"></span>
+          <div class="luma-glass__content">
+            <div class="glass-inner">
+              <div class="glass-eyebrow"><span class="glass-star">✳</span> OPTICAL MATERIAL</div>
+              <div class="glass-title">Liquid<br/><span>Glass.</span></div>
+              <div class="glass-description">Light, depth and refraction.</div>
+              <div class="glass-pill">LIVE REFRACTION <span aria-hidden="true">↗</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-label">FIXED SHAPE <span>·</span> NO OUTER BLUR</div>
+      </div>
+      <section class="controls" aria-label="Glass appearance controls">
+        <div class="control">
+          <div class="control-head"><label for="opacity">Glass opacity</label><output id="opacity-value" for="opacity">40%</output></div>
+          <input id="opacity" type="range" min="0" max=".75" step=".01" value=".4" />
+          <div class="control-scale"><span>Clear</span><span>Milky</span></div>
+        </div>
+        <div class="control">
+          <div class="control-head"><label for="refraction-slider">Refraction</label><output id="refraction-value" for="refraction-slider">23 / 60</output></div>
+          <input id="refraction-slider" type="range" min="0" max="60" step="1" value="23" />
+          <div class="control-scale"><span>None</span><span>Strong</span></div>
+        </div>
+        <div class="control">
+          <div class="control-head"><label for="thickness">Optical edge thickness</label><output id="thickness-value" for="thickness">1.8 px</output></div>
+          <input id="thickness" type="range" min=".5" max="6" step=".1" value="1.8" />
+          <div class="control-scale"><span>Thin</span><span>Thick</span></div>
+        </div>
+        <div class="controls-bottom">
+          <span id="render-status" class="status" role="status"><i></i> Image-backed WebGL · CSS optical shell</span>
+          <button id="reset" type="button">↺ &nbsp; Reset</button>
+        </div>
+      </section>
+      <p class="footnote">This static Pages demo mirrors the library's image-backed shader. It does not capture arbitrary DOM behind the glass.</p>
+    </main>
+  </div>
+</body>
+</html>

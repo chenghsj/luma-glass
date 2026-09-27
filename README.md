@@ -4,17 +4,21 @@ A small React + TypeScript library for fixed-shape optical glass. Adjust the mil
 
 **Status:** first working prototype. The WebGL renderer supports a background image managed by `GlassScene`. Arbitrary DOM behind the glass gets the CSS surface and edge, **not** pixel-perfect refraction. The package is not published to npm yet.
 
-## GitHub Pages demo
+## GitHub Pages demo (without custom Actions)
 
-When GitHub Pages is enabled for this repository, the interactive playground is published at **https://chenghsj.github.io/luma-glass/**. The demo uses the Vite `/luma-glass/` base path, including its sample background image.
+The build-free, static Pages demo lives in [docs/](./docs/) and has the three live controls. Once Pages is enabled, its expected URL is **https://chenghsj.github.io/luma-glass/**.
 
-1. Open the repository's **Settings → Pages** page.
-2. Under **Build and deployment → Source**, select **GitHub Actions**.
-3. Run the **Deploy demo to GitHub Pages** workflow under Actions if it has not already run successfully. Later pushes to `main` deploy automatically.
+**Publish it in the GitHub UI:**
 
-For a local deployment build, run `npm run build:demo`. This writes `dist-demo/`, separately from the npm library build in `dist/`. To preview the Pages build locally, run `npm run preview:demo` and open the local URL ending in `/luma-glass/`.
+1. Open **Settings → Pages** for this repository.
+2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
+3. Select **main** and **/docs**, then click **Save**.
 
-**Repository visibility:** the repository is currently private. GitHub Free only supports Pages from public repositories; GitHub Pro and supported organizational plans can publish Pages from private repositories. A private source repository does not make the deployed site private by default. Do not add sensitive content to the demo.
+The docs folder contains prebuilt HTML, CSS, JavaScript, the background image and an empty \`.nojekyll\` file. It can be hosted directly without Vite, npm install or a custom build workflow. Automatic CI is turned off; the CI workflow is available with manual dispatch when your minutes are available again. The former custom Pages workflow was removed.
+
+GitHub may still report its internal Pages deployment workflow when publishing from a branch. \`.nojekyll\` bypasses its Jekyll build, but account-level billing limits or Pages eligibility can still prevent publishing. This repository was private at the time of this change. GitHub Free requires a public repository for Pages; GitHub Pro or supported organizational plans can publish Pages from private repositories. A published site may be publicly viewable even if its source repo is private.
+
+The static demo mirrors the library's image-backed shader. If you change the library's UI or shader, update \`docs/\` as well. The optional \`npm run build:demo\` still creates a separate Vite build in \`dist-demo/\` for local verification, but publishing \`docs/\` does not require it.
 
 ## Run the playground
 

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470">
+ <defs>
+  <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#92c3ef"/><stop offset=".4" stop-color="#b7ade7"/><stop offset=".76" stop-color="#eeb9c8"/><stop offset="1" stop-color="#f9dbaf"/></linearGradient>
+  <radialGradient id="blue"><stop stop-color="#74a6ef"/><stop offset="1" stop-color="#7597e8" stop-opacity="0"/></radialGradient>
+  <radialGradient id="peach"><stop stop-color="#ffe9ad"/><stop offset="1" stop-color="#f5a8b8" stop-opacity="0"/></radialGradient>
+  <linearGradient id="wave" x1="0" y1="0" x2="1" y2="1"><stop stop-color="white" stop-opacity=".98"/><stop offset=".52" stop-color="white" stop-opacity=".22"/><stop offset="1" stop-color="white" stop-opacity=".94"/></linearGradient>
+  <linearGradient id="rear" x2="1" y2="1"><stop stop-color="#fbfaff" stop-opacity=".95"/><stop offset="1" stop-color="#aeb8e2" stop-opacity=".9"/></linearGradient>
+ </defs>
+ <rect width="760" height="470" fill="url(#bg)"/>
+ <circle cx="63" cy="371" r="309" fill="url(#blue)"/>
+ <circle cx="666" cy="94" r="309" fill="url(#peach)"/>
+ <g stroke="white" fill="none" stroke-opacity=".26"><circle cx="539" cy="210" r="180"/><circle cx="539" cy="210" r="218"/></g>
+ <g fill="none" stroke="url(#wave)" stroke-linecap="round">
+  <path d="M-96 328C92 130 206 533 406 236S667 70 852 225" stroke-width="45" opacity=".39"/>
+  <path d="M-96 295C92 98 206 499 406 203S667 37 852 192" stroke-width="3" opacity=".85"/>
+  <path d="M-96 361C92 163 206 566 406 269S667 103 852 258" stroke-width="3" opacity=".92"/>
+ </g>
+ <text x="26" y="421" fill="white" fill-opacity=".24" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="166" letter-spacing="-11" font-weight="800">fluid.</text>
+ <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <rect x="438" y="254" width="291" height="161" rx="28" fill="url(#rear)" stroke="white" stroke-opacity=".95" stroke-width="1.5"/>
+  <path d="M468 256H691" stroke="white" stroke-opacity=".93" stroke-width="2.1" stroke-linecap="round"/>
+  <circle cx="479" cy="302" r="19" fill="white" fill-opacity=".55" stroke="white" stroke-opacity=".9"/>
+  <path d="M471 302l7 7 12-16" fill="none" stroke="#7281b1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="509" y="298" fill="#415075" font-size="12" font-weight="800" letter-spacing=".8">LOWER LAYER</text>
+  <text x="509" y="321" fill="#54627f" font-size="11" font-weight="550">Visible through glass</text>
+  <path d="M461 353H700" stroke="white" stroke-opacity=".75"/>
+  <rect x="462" y="370" width="122" height="24" rx="12" fill="white" fill-opacity=".55"/>
+  <text x="475" y="386" fill="#556487" font-size="10" font-weight="750">BEHIND GLASS</text>
+  <circle cx="681" cy="382" r="5" fill="#7c9bcc"/><circle cx="700" cy="382" r="5" fill="#e5a2b2"/>
+ </g>
+ <text x="28" y="449" fill="#415174" fill-opacity=".73" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="10" font-weight="750" letter-spacing="1.4">LIGHT · DEPTH · REFRACTION</text>
+</svg>
