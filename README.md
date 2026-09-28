@@ -8,7 +8,7 @@ A React + TypeScript glass component that refracts the live DOM behind it—incl
 
 ## Quick start
 
-Run the [playground](https://chenghsj.github.io/luma-glass/) locally:
+Run the project locally:
 
 ```bash
 git clone https://github.com/chenghsj/luma-glass.git
